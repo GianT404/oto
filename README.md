@@ -1,7 +1,7 @@
 
-<p align="center">
+<!-- <p align="center">
   <img src="./assets/logo.svg" alt="oto Logo" width="120" />
-</p>
+</p> -->
 
 <h1 align="center">oto</h1>
 
@@ -71,13 +71,6 @@ https://github.com/user-attachments/assets/d7bf017b-7a73-4f7e-8d07-964e5f460249
 curl -fsSL https://raw.githubusercontent.com/GianT404/oto/main/scripts/install.sh | bash
 ```
 
-oto installs to `~/.local/bin/oto` on Linux. Add `~/.local/bin` to `PATH` if your shell does not already include it. After installation, updates work without `sudo`:
-
-```bash
-oto --upgrade
-```
-
-
 ```powershell
 # Windows
 curl.exe -O https://raw.githubusercontent.com/GianT404/oto/main/scripts/install.ps1 | iex
@@ -142,16 +135,13 @@ npx expo start
 
 ### Theme
 
-Configurable in **Settings** (`Esc`). Two modes:
-
 - **Default** — accent color on borders, selected items, and progress bar
 - **Mono** — all-white text and borders, no accent colors (high-contrast)
 
-Selected theme persists across sessions.
 
 ### Mouse Support
 
-Configurable in **Settings** (`Esc`), default OFF.
+default OFF.
 
 
 ### Logs
