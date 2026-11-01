@@ -95,36 +95,6 @@ jobs:
             set -Eeuo pipefail
 
             APP_DIR="$HOME/oto"
-            
-            echo "=== SSH Deployment Identity ==="
-            echo "Hostname: $(hostname)"
-            echo "User: $(whoami)"
-            echo "HOME: $HOME"
-            echo "APP_DIR: $APP_DIR"
-
-            echo -n "Instance ID: "
-            curl -fsS --max-time 3 \
-              -H "Metadata-Flavor: Google" \
-              http://metadata.google.internal/computeMetadata/v1/instance/id \
-              || echo "Unavailable"
-
-            echo
-            echo "=== Environment File ==="
-
-            if [[ -f "$APP_DIR/.env" ]]; then
-                ls -lh "$APP_DIR/.env"
-
-                if grep -Eq '^oto_API_KEY=.+$' "$APP_DIR/.env"; then
-                    echo "API key: SET"
-                else
-                    echo "API key: MISSING"
-                fi
-            else
-                echo "File not found: $APP_DIR/.env"
-            fi
-
-            # Stop here temporarily. Do not run Docker migration yet.
-            exit 1
 
             if [[ ! -d "$APP_DIR/.git" ]]; then
               echo "OTO repository not found: $APP_DIR"
