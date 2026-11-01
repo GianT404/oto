@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"som/internal/cache"
+	"oto/internal/cache"
 )
 
 const (

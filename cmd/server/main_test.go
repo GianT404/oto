@@ -8,8 +8,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"som/internal/backend"
-	"som/internal/scraper"
+	"oto/internal/backend"
+	"oto/internal/scraper"
 )
 
 type stubScraper struct{}

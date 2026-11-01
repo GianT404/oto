@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"som/internal/domain"
-	"som/internal/storage"
+	"oto/internal/domain"
+	"oto/internal/storage"
 )
 
 const manualLyricsOverridePrefix = "lyrics_manual_override:"

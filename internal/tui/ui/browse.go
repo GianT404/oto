@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"errors"
 	"log"
-	"som/internal/domain"
-	"som/internal/storage"
+	"oto/internal/domain"
+	"oto/internal/storage"
 	"strings"
 
 	"charm.land/bubbles/v2/spinner"
@@ -15,26 +15,26 @@ import (
 )
 
 type LeftPanel struct {
-	provider        domain.MusicProvider
-	input           textinput.Model
-	spinner         spinner.Model
-	tracks          []domain.Track
-	locals          []LocalFile
-	searchCursor    int
+	provider         domain.MusicProvider
+	input            textinput.Model
+	spinner          spinner.Model
+	tracks           []domain.Track
+	locals           []LocalFile
+	searchCursor     int
 	searchOffset     int
 	searchNextOffset int
 	searchQuery      string
 	hasMore          bool
 	loadingMore      bool
-	dlCursor        int
-	dlOffset        int
-	dlPreFilterPath string
-	plCursor        int
-	plOffset        int
-	plPreFilterID   string
-	qCursor         int
-	qOffset         int
-	queue           []domain.Track
+	dlCursor         int
+	dlOffset         int
+	dlPreFilterPath  string
+	plCursor         int
+	plOffset         int
+	plPreFilterID    string
+	qCursor          int
+	qOffset          int
+	queue            []domain.Track
 
 	loading         bool
 	searched        bool
@@ -1018,7 +1018,7 @@ func (p *LeftPanel) scrollSearchIntoView() {
 	if p.searchCursor < p.searchOffset {
 		p.searchOffset = p.searchCursor
 	} else if p.searchCursor >= p.searchOffset+visible {
-		p.searchOffset = p.searchCursor-visible+1
+		p.searchOffset = p.searchCursor - visible + 1
 	}
 	if p.searchOffset < 0 {
 		p.searchOffset = 0

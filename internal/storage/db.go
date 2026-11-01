@@ -17,19 +17,19 @@ type DB struct {
 	dir  string
 }
 
-// DefaultDir returns the default download directory (~/.local/share/som).
+// DefaultDir returns the default download directory (~/.local/share/oto).
 func DefaultDir() string {
 	home, err := os.UserHomeDir()
 	if err != nil {
-		return filepath.Join(".", "som")
+		return filepath.Join(".", "oto")
 	}
-	return filepath.Join(home, ".local", "share", "som")
+	return filepath.Join(home, ".local", "share", "oto")
 }
 
 // legacyDirs returns previous default directories in reverse chronological order.
 func legacyDirs(home string) []string {
 	return []string{
-		filepath.Join(home, "Music", "SOM_Downloads"),
+		filepath.Join(home, "Music", "oto_Downloads"),
 	}
 }
 
@@ -38,7 +38,7 @@ func Open(dir string) (*DB, error) {
 		return nil, err
 	}
 
-	dbPath := filepath.Join(dir, "som.db")
+	dbPath := filepath.Join(dir, "oto.db")
 	conn, err := sql.Open("sqlite", dbPath+"?_foreign_keys=1&_journal_mode=WAL&_busy_timeout=5000&_synchronous=NORMAL")
 	if err != nil {
 		return nil, fmt.Errorf("open db: %w", err)
@@ -128,7 +128,7 @@ func MigrateFromLegacy(dir string) error {
 			return fmt.Errorf("create target dir: %w", err)
 		}
 
-		// Move files (including som.db) from legacy to target.
+		// Move files (including oto.db) from legacy to target.
 		entries, err := os.ReadDir(legacy)
 		if err != nil {
 			return err
@@ -154,7 +154,7 @@ func MigrateFromLegacy(dir string) error {
 		}
 
 		// Update paths in the moved DB.
-		dbPath := filepath.Join(dir, "som.db")
+		dbPath := filepath.Join(dir, "oto.db")
 		conn, err := sql.Open("sqlite", dbPath+"?_foreign_keys=1&_journal_mode=WAL&_busy_timeout=5000&_synchronous=NORMAL")
 		if err != nil {
 			return fmt.Errorf("open migrated database %s: %w", dbPath, err)

@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"time"
 
-	"som/internal/scraper"
+	"oto/internal/scraper"
 )
 
 type ResolveHandler struct {

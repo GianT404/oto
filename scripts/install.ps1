@@ -1,6 +1,6 @@
 $ErrorActionPreference = "Stop"
-$Repo = "GianT404/SOM"
-$DestDir = Join-Path $env:LocalAppData "Programs\som"
+$Repo = "GianT404/oto"
+$DestDir = Join-Path $env:LocalAppData "Programs\oto"
 
 function Info($msg) { Write-Host "==> $msg" -ForegroundColor Cyan }
 function Warn($msg) { Write-Host "!! $msg" -ForegroundColor Yellow }
@@ -65,11 +65,11 @@ function Get-LatestReleaseWithAsset {
     return $null
 }
 
-function Install-Som {
+function Install-oto {
     if (-not [Environment]::Is64BitOperatingSystem) {
         Err "Only 64-bit Windows is supported."
     }
-    $asset = "som-windows-amd64.exe"
+    $asset = "oto-windows-amd64.exe"
 
     Info "Looking for the latest build of ($asset)..."
     $tag = Get-LatestReleaseWithAsset -AssetName $asset
@@ -78,7 +78,7 @@ function Install-Som {
     }
 
     $url = "https://github.com/$Repo/releases/download/$tag/$asset"
-    $dest = Join-Path $DestDir "som.exe"
+    $dest = Join-Path $DestDir "oto.exe"
 
     Info "($asset) <- $tag"
     Invoke-WebRequest -Uri $url -OutFile $dest
@@ -92,8 +92,8 @@ function Install-Som {
         [Environment]::SetEnvironmentVariable("Path", $newPath, "User")
     }
 
-    # Warn if an older som earlier in PATH shadows the one we just installed.
-    $cmd = Get-Command som -ErrorAction SilentlyContinue | Select-Object -First 1
+    # Warn if an older oto earlier in PATH shadows the one we just installed.
+    $cmd = Get-Command oto -ErrorAction SilentlyContinue | Select-Object -First 1
     if ($cmd -and $cmd.CommandType -eq "Application" -and $cmd.Source -ne $dest) {
         Warn "PATH prefers '$($cmd.Source)' (an old copy) over the new $dest."
         Warn "Remove the old copy to use the new one:  Remove-Item '$($cmd.Source)'"
@@ -101,4 +101,4 @@ function Install-Som {
 }
 
 Install-Deps
-Install-Som
+Install-oto

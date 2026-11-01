@@ -11,7 +11,7 @@ import (
 )
 
 // Nerd-font icon codepoints (Material Design via nerd-fonts)
-// Font Awesome (Nerd Font)
+// Font Aweotoe (Nerd Font)
 const (
 	IconCheck = "\uf00c"
 )

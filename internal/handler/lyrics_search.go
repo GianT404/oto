@@ -8,8 +8,8 @@ import (
 	"strings"
 	"time"
 
-	"som/internal/domain"
-	"som/internal/scraper"
+	"oto/internal/domain"
+	"oto/internal/scraper"
 )
 
 const maxLyricsSearchResults = 7

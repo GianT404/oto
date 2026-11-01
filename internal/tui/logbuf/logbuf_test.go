@@ -114,7 +114,7 @@ func TestDumpCrashTo(t *testing.T) {
 	r.Push("hello")
 	r.Push("world")
 
-	path := filepath.Join(t.TempDir(), "crash_som_tui_test.log")
+	path := filepath.Join(t.TempDir(), "crash_oto_tui_test.log")
 	if err := r.DumpCrashTo(path, "test note"); err != nil {
 		t.Fatalf("dump: %v", err)
 	}
@@ -123,7 +123,7 @@ func TestDumpCrashTo(t *testing.T) {
 		t.Fatalf("read: %v", err)
 	}
 	s := string(data)
-	for _, want := range []string{"SOM TUI crash dump", "test note", "hello", "world", "goroutine stack trace"} {
+	for _, want := range []string{"oto TUI crash dump", "test note", "hello", "world", "goroutine stack trace"} {
 		if !contains(s, want) {
 			t.Fatalf("missing %q in dump", want)
 		}

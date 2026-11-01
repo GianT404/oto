@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"som/internal/tui/layout"
+	"oto/internal/tui/layout"
 
 	"charm.land/lipgloss/v2"
 	"github.com/mattn/go-runewidth"

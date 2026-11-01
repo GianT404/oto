@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"som/internal/tui/audio"
+	"oto/internal/tui/audio"
 
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"

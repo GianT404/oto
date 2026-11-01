@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"som/internal/storage"
+	"oto/internal/storage"
 
 	tea "charm.land/bubbletea/v2"
 )

@@ -24,7 +24,7 @@ func WriteUnique(dir, baseName, discriminator, ext string, write func(io.Writer)
 	}
 	discriminator = cleanComponent(discriminator)
 
-	tmp, err := os.CreateTemp(dir, ".som-download-*.tmp")
+	tmp, err := os.CreateTemp(dir, ".oto-download-*.tmp")
 	if err != nil {
 		return "", err
 	}
@@ -56,7 +56,7 @@ func WriteUnique(dir, baseName, discriminator, ext string, write func(io.Writer)
 		} else if errors.Is(linkErr, os.ErrExist) {
 			continue
 		} else {
-			// Some filesystems do not support hard links. O_EXCL still makes
+			// otoe filesystems do not support hard links. O_EXCL still makes
 			// destination creation race-safe and prevents replacing an existing file.
 			if err := copyToExclusive(tmpPath, dest); err == nil {
 				return dest, nil

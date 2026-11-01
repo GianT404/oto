@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=oto
+Comment=oto - Terminal Music Player
+Exec=kitty --class oto @oto_EXEC@
+Icon=oto
+Terminal=false
+Type=Application
+Categories=AudioVideo;Audio;Player;
+StartupWMClass=oto

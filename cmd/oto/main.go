@@ -12,12 +12,12 @@ import (
 	"strconv"
 	"syscall"
 
-	"som/internal/domain"
-	"som/internal/local"
-	"som/internal/scraper"
-	"som/internal/storage"
-	"som/internal/tui/api"
-	"som/internal/tui/ui"
+	"oto/internal/domain"
+	"oto/internal/local"
+	"oto/internal/scraper"
+	"oto/internal/storage"
+	"oto/internal/tui/api"
+	"oto/internal/tui/ui"
 
 	tea "charm.land/bubbletea/v2"
 	"github.com/go-chi/chi/v5/middleware"
@@ -36,8 +36,8 @@ func main() {
 	var upgradeFlag, installFlag, versionFlag, checkUpdateFlag, uninstallFlag, updateYtdlpFlag, changelogFlag, syncAssetsFlag, statsFlag bool
 
 	var rootCmd = &cobra.Command{
-		Use:   "som",
-		Short: "SOM - Terminal Music Player",
+		Use:   "oto",
+		Short: "oto - Terminal Music Player",
 		Run: func(cmd *cobra.Command, args []string) {
 			if updateYtdlpFlag {
 				ytdlpPath := os.Getenv("YTDLP_PATH")
@@ -51,7 +51,7 @@ func main() {
 				return
 			}
 			if versionFlag {
-				fmt.Println("som", Version)
+				fmt.Println("oto", Version)
 				return
 			}
 			if changelogFlag {
@@ -102,7 +102,7 @@ func main() {
 			if statsFlag {
 				totalTimeDir := downloadDir
 				if totalTimeDir == "" {
-					if env := os.Getenv("SOM_DOWNLOAD_DIR"); env != "" {
+					if env := os.Getenv("oto_DOWNLOAD_DIR"); env != "" {
 						totalTimeDir = env
 					} else {
 						totalTimeDir = storage.DefaultDir()
@@ -162,16 +162,16 @@ func main() {
 				provider = &local.DirectProvider{Scraper: sc}
 			} else {
 				if apiKey == "" {
-					apiKey = os.Getenv("SOM_API_KEY")
+					apiKey = os.Getenv("oto_API_KEY")
 				}
 				if apiKey == "" {
-					fmt.Fprintln(os.Stderr, "warning: --server set without --api-key or SOM_API_KEY env; the backend will reject every request with 401")
+					fmt.Fprintln(os.Stderr, "warning: --server set without --api-key or oto_API_KEY env; the backend will reject every request with 401")
 				}
 				provider = api.NewHTTPProvider(serverURL, apiKey)
 			}
 
 			if downloadDir == "" {
-				if env := os.Getenv("SOM_DOWNLOAD_DIR"); env != "" {
+				if env := os.Getenv("oto_DOWNLOAD_DIR"); env != "" {
 					downloadDir = env
 				} else {
 					downloadDir = storage.DefaultDir()
@@ -186,7 +186,7 @@ func main() {
 			defer func() {
 				if r := recover(); r != nil {
 					path := ui.LogBuf.DumpCrash(fmt.Sprintf("panic: %v", r))
-					fmt.Fprintf(os.Stderr, "\nsom: crash detected; log dumped to %s\n", path)
+					fmt.Fprintf(os.Stderr, "\noto: crash detected; log dumped to %s\n", path)
 					fmt.Fprintf(os.Stderr, "panic: %v\n%s", r, debug.Stack())
 					os.Exit(2)
 				}
@@ -201,7 +201,7 @@ func main() {
 					switch s {
 					case syscall.SIGQUIT:
 						path := ui.LogBuf.DumpCrash("SIGQUIT received")
-						fmt.Fprintf(os.Stderr, "\nsom: SIGQUIT; log dumped to %s\n", path)
+						fmt.Fprintf(os.Stderr, "\noto: SIGQUIT; log dumped to %s\n", path)
 						os.Exit(130)
 					default:
 						p.Quit()
@@ -213,7 +213,7 @@ func main() {
 			if _, err := p.Run(); err != nil {
 				if errors.Is(err, tea.ErrProgramPanic) {
 					path := ui.LogBuf.DumpCrash("program panic (stack printed above)")
-					fmt.Fprintf(os.Stderr, "\nsom: crash detected; log dumped to %s\n", path)
+					fmt.Fprintf(os.Stderr, "\noto: crash detected; log dumped to %s\n", path)
 					os.Exit(2)
 				}
 				fmt.Fprintf(os.Stderr, "Error TUI: %v\n", err)
@@ -231,14 +231,14 @@ func main() {
 	}
 
 	// Đăng ký toàn bộ cờ vào Cobra (tự động ăn khớp completion)
-	rootCmd.Flags().StringVar(&serverURL, "server", "", "Use a remote SOM backend")
+	rootCmd.Flags().StringVar(&serverURL, "server", "", "Use a remote oto backend")
 	rootCmd.Flags().StringVar(&apiKey, "api-key", "", "Authenticate with the remote backend")
 	rootCmd.Flags().StringVar(&downloadDir, "download-dir", "", "Set the music library directory")
-	rootCmd.Flags().BoolVarP(&upgradeFlag, "upgrade", "U", false, "Install the latest SOM release")
-	rootCmd.Flags().BoolVar(&installFlag, "install", false, "Install SOM to a user-local bin directory")
+	rootCmd.Flags().BoolVarP(&upgradeFlag, "upgrade", "U", false, "Install the latest oto release")
+	rootCmd.Flags().BoolVar(&installFlag, "install", false, "Install oto to a user-local bin directory")
 	rootCmd.Flags().BoolVarP(&versionFlag, "version", "v", false, "Print the version and exit")
 	rootCmd.Flags().BoolVar(&checkUpdateFlag, "check-update", false, "Check for a newer release")
-	rootCmd.Flags().BoolVar(&uninstallFlag, "uninstall", false, "Remove the user-local SOM installation")
+	rootCmd.Flags().BoolVar(&uninstallFlag, "uninstall", false, "Remove the user-local oto installation")
 	rootCmd.Flags().BoolVar(&updateYtdlpFlag, "update-ytdlp", false, "Update yt-dlp and exit")
 	rootCmd.Flags().BoolVar(&changelogFlag, "changelog", false, "Print the current release changelog")
 	rootCmd.Flags().BoolVar(

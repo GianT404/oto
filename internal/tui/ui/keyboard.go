@@ -1,7 +1,7 @@
 package ui
 
 import (
-	"som/internal/tui/player"
+	"oto/internal/tui/player"
 
 	tea "charm.land/bubbletea/v2"
 )

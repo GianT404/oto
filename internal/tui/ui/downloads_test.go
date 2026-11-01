@@ -3,8 +3,8 @@ package ui
 import (
 	"testing"
 
-	"som/internal/domain"
-	"som/internal/storage"
+	"oto/internal/domain"
+	"oto/internal/storage"
 )
 
 func TestRequestDownloadRejectsAlreadyDownloadedTrack(t *testing.T) {
@@ -16,26 +16,26 @@ func TestRequestDownloadRejectsAlreadyDownloadedTrack(t *testing.T) {
 		{
 			name: "matching video ID",
 			stored: storage.LocalFile{
-				Name: "Previously Downloaded",
-				VideoID: "video-123",
+				Name:     "Previously Downloaded",
+				VideoID:  "video-123",
 				Duration: 180,
 			},
 			track: domain.Track{
-				ID: "video-123",
-				Title: "Previously Downloaded",
+				ID:       "video-123",
+				Title:    "Previously Downloaded",
 				Duration: 180,
 			},
 		},
 		{
 			name: "matching title and duration",
 			stored: storage.LocalFile{
-				Name: "Same Song",
-				VideoID: "another-video",
+				Name:     "Same Song",
+				VideoID:  "another-video",
 				Duration: 180,
 			},
 			track: domain.Track{
-				ID: "current-search-result",
-				Title: " same song ",
+				ID:       "current-search-result",
+				Title:    " same song ",
 				Duration: 181,
 			},
 		},
@@ -58,9 +58,9 @@ func TestRequestDownloadRejectsAlreadyDownloadedTrack(t *testing.T) {
 			// Leave locals empty to verify the storage check catches a previously
 			// downloaded track even if the in-memory list has not been refreshed.
 			panel := LeftPanel{
-				plStore: db,
+				plStore:     db,
 				downloadDir: dir,
-				provider: nil,
+				provider:    nil,
 			}
 
 			cmd := panel.requestDownload(tt.track)

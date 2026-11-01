@@ -1,8 +1,8 @@
 package ui
 
 import (
-	"som/internal/domain"
-	"som/internal/storage"
+	"oto/internal/domain"
+	"oto/internal/storage"
 )
 
 type SearchResultMsg struct {
@@ -167,17 +167,16 @@ type StreamStartedMsg struct {
 	Gen uint64
 }
 
-
 type OpenLyricsSearchMsg struct{}
 
 type ManualLyricsSearchResultsMsg struct {
-	Query string
+	Query     string
 	RequestID uint64
-	Results []domain.LyricsSearchResult
-	Err error
+	Results   []domain.LyricsSearchResult
+	Err       error
 }
 
 type ManualLyricsChosenMsg struct {
 	VideoID string
-	Result domain.LyricsSearchResult
+	Result  domain.LyricsSearchResult
 }

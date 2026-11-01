@@ -1,4 +1,4 @@
-name: Release SOM Mobile APK
+name: Release oto Mobile APK
 
 on:
   push:

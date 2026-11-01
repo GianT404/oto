@@ -9,9 +9,9 @@ import (
 	"strings"
 	"time"
 
-	"som/internal/domain"
-	"som/internal/fileutil"
-	"som/internal/scraper"
+	"oto/internal/domain"
+	"oto/internal/fileutil"
+	"oto/internal/scraper"
 )
 
 type DirectProvider struct {

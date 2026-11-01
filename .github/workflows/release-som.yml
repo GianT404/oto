@@ -1,4 +1,4 @@
-name: Release SOM TUI
+name: Release oto TUI
 
 on:
   push:
@@ -30,28 +30,28 @@ jobs:
         run: |
           GOOS=linux GOARCH=amd64 go build \
             -ldflags "-X main.Version=${{ github.ref_name }}" \
-            -o som-linux-amd64 ./cmd/som
+            -o oto-linux-amd64 ./cmd/oto
 
       - name: Build Windows amd64
         run: |
           CGO_ENABLED=1 CC=x86_64-w64-mingw32-gcc GOOS=windows GOARCH=amd64 go build \
             -ldflags "-X main.Version=${{ github.ref_name }}" \
-            -o som-windows-amd64.exe ./cmd/som
+            -o oto-windows-amd64.exe ./cmd/oto
 
       - name: Sign release binaries (minisign)
         env:
-          SOM_MINISIGN_KEY: ${{ secrets.SOM_MINISIGN_KEY }}
+          oto_MINISIGN_KEY: ${{ secrets.oto_MINISIGN_KEY }}
         run: |
-          go run ./cmd/som-sign sign som-linux-amd64 som-windows-amd64.exe
+          go run ./cmd/oto-sign sign oto-linux-amd64 oto-windows-amd64.exe
 
       - name: Publish release
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            som-linux-amd64
-            som-linux-amd64.minisig
-            som-windows-amd64.exe
-            som-windows-amd64.exe.minisig
+            oto-linux-amd64
+            oto-linux-amd64.minisig
+            oto-windows-amd64.exe
+            oto-windows-amd64.exe.minisig
           generate_release_notes: true
 
       - name: Delete tag on failure

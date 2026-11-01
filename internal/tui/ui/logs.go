@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"som/internal/tui/logbuf"
+	"oto/internal/tui/logbuf"
 
 	"charm.land/lipgloss/v2"
 )

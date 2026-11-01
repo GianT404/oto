@@ -8,8 +8,8 @@ import (
 	"sync"
 	"time"
 
-	"som/internal/cache"
-	"som/internal/scraper"
+	"oto/internal/cache"
+	"oto/internal/scraper"
 )
 
 type LyricsHandler struct {

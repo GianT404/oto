@@ -59,47 +59,47 @@ func TestBuildTitleCandidates_CommonFormats(t *testing.T) {
 		wantArtist string
 	}{
 		{
-			name: "artist dash song with video noise",
-			title: "Minami - Kawaki wo Ameku (Official Music Video) [1080p]",
-			wantTrack: "Kawaki wo Ameku",
+			name:       "artist dash song with video noise",
+			title:      "Minami - Kawaki wo Ameku (Official Music Video) [1080p]",
+			wantTrack:  "Kawaki wo Ameku",
 			wantArtist: "Minami",
 		},
 		{
-			name: "song pipe artist and channel",
-			title: "夜に駆ける | YOASOBI | YOASOBI Official Channel",
-			wantTrack: "夜に駆ける",
+			name:       "song pipe artist and channel",
+			title:      "夜に駆ける | YOASOBI | YOASOBI Official Channel",
+			wantTrack:  "夜に駆ける",
 			wantArtist: "YOASOBI",
 		},
 		{
-			name: "Japanese bracket format",
-			title: "【MV】Minami「カワキヲアメク」",
-			wantTrack: "カワキヲアメク",
+			name:       "Japanese bracket format",
+			title:      "【MV】Minami「カワキヲアメク」",
+			wantTrack:  "カワキヲアメク",
 			wantArtist: "Minami",
 		},
 		{
-			name: "anime context removed",
-			title: "Crying for Rain (Kawaki wo Ameku) - Domestic na Kanojo OP",
-			artist: "Minami",
-			wantTrack: "Crying for Rain",
+			name:       "anime context removed",
+			title:      "Crying for Rain (Kawaki wo Ameku) - Domestic na Kanojo OP",
+			artist:     "Minami",
+			wantTrack:  "Crying for Rain",
 			wantArtist: "Minami",
 		},
 		{
-			name: "fullwidth parentheses removed",
-			title: "Song Title（Romanized Title） [Official Audio]",
-			artist: "Artist",
-			wantTrack: "Song Title",
+			name:       "fullwidth parentheses removed",
+			title:      "Song Title（Romanized Title） [Official Audio]",
+			artist:     "Artist",
+			wantTrack:  "Song Title",
 			wantArtist: "Artist",
 		},
 		{
-			name: "version suffix removed",
-			title: "Song Title Piano Cover by Channel Name",
-			artist: "Artist",
-			wantTrack: "Song Title",
+			name:       "version suffix removed",
+			title:      "Song Title Piano Cover by Channel Name",
+			artist:     "Artist",
+			wantTrack:  "Song Title",
 			wantArtist: "Artist",
 		},
 		{
-			name: "noise word inside plain title preserved",
-			title: "Cover Me in Rain",
+			name:      "noise word inside plain title preserved",
+			title:     "Cover Me in Rain",
 			wantTrack: "Cover Me in Rain",
 		},
 	}
@@ -113,9 +113,9 @@ func TestBuildTitleCandidates_CommonFormats(t *testing.T) {
 }
 
 func TestBuildTitleCandidates_FallbackDoesNotRestoreBracketContents(t *testing.T) {
-	rawTitle := "Some Song [Fan Upload] / Random Channel"
+	rawTitle := "otoe Song [Fan Upload] / Random Channel"
 	candidates := buildTitleCandidates(rawTitle, "")
-	requireCandidate(t, candidates, "Some Song / Random Channel", "")
+	requireCandidate(t, candidates, "otoe Song / Random Channel", "")
 	assertNoCandidateContains(t, candidates, "Fan Upload")
 }
 

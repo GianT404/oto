@@ -22,9 +22,9 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 
-	"som/internal/backend"
-	"som/internal/handler"
-	"som/internal/scraper"
+	"oto/internal/backend"
+	"oto/internal/handler"
+	"oto/internal/scraper"
 )
 
 const streamRequestTimeout = 20 * time.Minute
@@ -32,9 +32,9 @@ const streamRequestTimeout = 20 * time.Minute
 func main() {
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 	slog.SetDefault(logger)
-	apiKey := os.Getenv("SOM_API_KEY")
+	apiKey := os.Getenv("oto_API_KEY")
 	if apiKey == "" {
-		slog.Error("Missing environment variable SOM_API_KEY, server refuses to start.")
+		slog.Error("Missing environment variable oto_API_KEY, server refuses to start.")
 		os.Exit(1)
 	}
 	go func() {

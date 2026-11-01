@@ -5,7 +5,7 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 
-	"som/internal/domain"
+	"oto/internal/domain"
 )
 
 func mouseApp(t *testing.T) *App {

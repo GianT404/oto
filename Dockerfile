@@ -7,22 +7,22 @@ RUN go mod download
 
 COPY . .
 
-RUN CGO_ENABLED=0 GOOS=linux go build -o som-backend ./cmd/server/main.go
+RUN CGO_ENABLED=0 GOOS=linux go build -o oto-backend ./cmd/server/main.go
 
 FROM alpine:latest
 
 RUN apk add --no-cache python3 py3-pip ffmpeg ca-certificates \
     && pip install --no-cache-dir --break-system-packages yt-dlp \
-    && adduser -D -u 10001 somuser \
-    && mkdir -p /var/cache/som/yt-dlp \
-    && chown -R somuser:somuser /var/cache/som/yt-dlp
+    && adduser -D -u 10001 otouser \
+    && mkdir -p /var/cache/oto/yt-dlp \
+    && chown -R otouser:otouser /var/cache/oto/yt-dlp
 
 WORKDIR /app
 
-COPY --from=builder /app/som-backend .
+COPY --from=builder /app/oto-backend .
 
-USER somuser
+USER otouser
 
 EXPOSE 8080
 
-CMD ["./som-backend"]
+CMD ["./oto-backend"]

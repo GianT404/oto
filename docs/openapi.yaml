@@ -1,20 +1,20 @@
 openapi: 3.0.3
 info:
-  title: SOM API
+  title: oto API
   description: >
-    SOM API backend viết bằng Go, cho phép tìm kiếm
+    oto API backend viết bằng Go, cho phép tìm kiếm
     bài hát trên YouTube, stream/proxy audio, lấy lyrics đồng bộ (synced
     lyrics) và resolve direct audio URL để client tự tải nhạc.
     Backend sử dụng yt-dlp để trích xuất dữ liệu YouTube và LRCLib làm
     nguồn lyrics chính, với fallback là phụ đề (caption) của YouTube.
   contact:
     name: GianT404
-    url: https://github.com/GianT404/SOM
+    url: https://github.com/GianT404/oto
   license:
     name: Personal / Educational Use Only
 
 servers:
-  - url: https://somz.duckdns.org
+  - url: https://otoz.duckdns.org
     description: Production server
 
 tags:

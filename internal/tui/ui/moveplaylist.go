@@ -2,7 +2,7 @@ package ui
 
 import (
 	"fmt"
-	"som/internal/storage"
+	"oto/internal/storage"
 	"strings"
 
 	"charm.land/bubbles/v2/textinput"

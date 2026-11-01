@@ -3,9 +3,9 @@ package ui
 import (
 	"fmt"
 	"os"
+	"oto/internal/domain"
+	"oto/internal/storage"
 	"path/filepath"
-	"som/internal/domain"
-	"som/internal/storage"
 	"strings"
 
 	"charm.land/bubbles/v2/spinner"
@@ -97,7 +97,7 @@ func (ip ImportPanel) ViewImportContent(w, h int) string {
 	}
 
 	if count == 0 {
-		return renderBox(w, fmt.Sprintf("Import (%d)", count), DimItemStyle.Render(" No new audio files found."), themeCol("#7c7986"))
+		return renderBox(w, fmt.Sprintf("Import (%d)", count), DimItemStyle.Render("   No new audio files found."), themeCol("#7c7986"))
 	}
 
 	vis := ip.visibleRows()

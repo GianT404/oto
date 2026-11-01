@@ -44,7 +44,7 @@ func uninstallWindows() error {
 	if localAppData == "" {
 		return fmt.Errorf("no LocalAppData environment variable found")
 	}
-	destDir := filepath.Join(localAppData, "Programs", "som")
+	destDir := filepath.Join(localAppData, "Programs", "oto")
 	if err := os.RemoveAll(destDir); err != nil {
 		return fmt.Errorf("failed to remove %s: %w", destDir, err)
 	}
@@ -79,18 +79,18 @@ func alreadyInstalled() bool {
 		if localAppData == "" {
 			return true
 		}
-		return exe == filepath.Join(localAppData, "Programs", "som", "som.exe")
+		return exe == filepath.Join(localAppData, "Programs", "oto", "oto.exe")
 	default:
 		return true
 	}
 }
 
 func unixInstallPath() (string, error) {
-	home, err := somUserHome()
+	home, err := otoUserHome()
 	if err != nil {
 		return "", err
 	}
-	return filepath.Join(home, ".local", "bin", "som"), nil
+	return filepath.Join(home, ".local", "bin", "oto"), nil
 }
 
 func installUnix() error {
@@ -111,7 +111,7 @@ func installUnix() error {
 		if err := copyExecutableTo(dest); err != nil {
 			if os.IsPermission(err) {
 				return fmt.Errorf(
-					"no permission to write to %s — try: sudo som --install",
+					"no permission to write to %s — try: sudo oto --install",
 					destDir,
 				)
 			}
@@ -123,7 +123,7 @@ func installUnix() error {
 
 		fmt.Println("Installed to", dest)
 	} else {
-		fmt.Println("som is already installed at", dest)
+		fmt.Println("oto is already installed at", dest)
 	}
 
 	if err := installDesktopAssets(dest); err != nil {
@@ -136,7 +136,7 @@ func installUnix() error {
 
 func installWindows() error {
 	if alreadyInstalled() {
-		fmt.Println("som is already installed.")
+		fmt.Println("oto is already installed.")
 		return nil
 	}
 
@@ -144,19 +144,19 @@ func installWindows() error {
 	if localAppData == "" {
 		return fmt.Errorf("no LocalAppData environment variable found")
 	}
-	destDir := filepath.Join(localAppData, "Programs", "som")
+	destDir := filepath.Join(localAppData, "Programs", "oto")
 	if err := os.MkdirAll(destDir, 0o755); err != nil {
 		return fmt.Errorf("failed to create installation directory: %w", err)
 	}
 
-	dest := filepath.Join(destDir, "som.exe")
+	dest := filepath.Join(destDir, "oto.exe")
 	if err := copyExecutableTo(dest); err != nil {
 		return err
 	}
 
 	fmt.Println("Installed to", dest)
 	fmt.Println()
-	fmt.Println("To run `som` from anywhere, add the following directory to your PATH (do this only once):")
+	fmt.Println("To run `oto` from anywhere, add the following directory to your PATH (do this only once):")
 	fmt.Println("   ", destDir)
 	fmt.Println()
 	fmt.Println("How to add to PATH: type \"env\" in Windows Search → select \"Edit environment variables")

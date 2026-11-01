@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"som/internal/scraper"
+	"oto/internal/scraper"
 )
 
 const maxQueryLen = 100

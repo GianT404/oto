@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"som/internal/domain"
+	"oto/internal/domain"
 
 	tea "charm.land/bubbletea/v2"
 )
@@ -77,7 +77,6 @@ func TestLyricsSearchModalEscapeFromPreviewReturnsToResults(t *testing.T) {
 		t.Fatal("Esc back to results should not emit a command")
 	}
 }
-
 
 func TestLyricsSearchModalUsesSeparateSearchAndResultsBoxes(t *testing.T) {
 	modal := NewLyricsSearchModal(nil, domain.Track{ID: "video-1", Title: "Current track"}, 90, 30, nil)

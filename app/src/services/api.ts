@@ -1,9 +1,9 @@
 import * as SecureStore from 'expo-secure-store';
 import * as Crypto from 'expo-crypto';
 
-const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://somz.duckdns.org';
-const DEVICE_ID_KEY = 'som_device_id';
-const TOKEN_KEY = 'som_device_token';
+const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://otoz.duckdns.org';
+const DEVICE_ID_KEY = 'oto_device_id';
+const TOKEN_KEY = 'oto_device_token';
 
 async function getOrCreateDeviceId(): Promise<string> {
     let id = await SecureStore.getItemAsync(DEVICE_ID_KEY);

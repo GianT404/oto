@@ -1,15 +1,15 @@
 services:
-  som-backend-prod:
-    image: gian404/som-backend:latest
-    container_name: som-backend-prod
+  oto-backend-prod:
+    image: gian404/oto-backend:latest
+    container_name: oto-backend-prod
     restart: always
     env_file:
       - .env
     environment:
       - TRUSTED_PROXIES=172.16.0.0/12
-      - YTDLP_CACHE_DIR=/var/cache/som/yt-dlp
+      - YTDLP_CACHE_DIR=/var/cache/oto/yt-dlp
     volumes:
-      - ytdlp_cache:/var/cache/som/yt-dlp
+      - ytdlp_cache:/var/cache/oto/yt-dlp
     mem_limit: 512m
     cpus: "1.8"
     pids_limit: 128
@@ -22,7 +22,7 @@ services:
     # logging:
     #   driver: gcplogs
     #   options:
-    #     gcp-project: "besom-502914"
+    #     gcp-project: "beoto-502914"
     #     gcp-log-cmd: "true"
 
   caddy:

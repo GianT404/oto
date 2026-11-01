@@ -1,20 +1,20 @@
 [Unit]
-Description=SOM backend
+Description=oto backend
 After=network-online.target
 Wants=network-online.target
 
 [Service]
 Type=simple
-User=som                        # dedicated service user
-EnvironmentFile=/etc/som/som.env
-ExecStart=/usr/local/bin/SOM
+User=oto                        # dedicated service user
+EnvironmentFile=/etc/oto/oto.env
+ExecStart=/usr/local/bin/oto
 Restart=on-failure
 RestartSec=5
 NoNewPrivileges=true
 ProtectSystem=strict
 ProtectHome=true
 PrivateTmp=true
-StateDirectory=som              # writable /var/lib/som
+StateDirectory=oto              # writable /var/lib/oto
 
 [Install]
 WantedBy=multi-user.target

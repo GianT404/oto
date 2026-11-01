@@ -8,8 +8,8 @@ import (
 	"testing"
 
 	"charm.land/bubbles/v2/spinner"
-	"som/internal/domain"
-	"som/internal/storage"
+	"oto/internal/domain"
+	"oto/internal/storage"
 )
 
 func TestApplyMoveToPlaylistUsesPathIDs(t *testing.T) {
@@ -166,7 +166,6 @@ func TestSpinnerKeepsTickingWhileLoadingMore(t *testing.T) {
 	}
 }
 
-
 func TestApplyMoveToPlaylistAddOnlySkipsExistingTracks(t *testing.T) {
 	db, err := storage.Open(t.TempDir())
 	if err != nil {
@@ -194,7 +193,7 @@ func TestApplyMoveToPlaylistAddOnlySkipsExistingTracks(t *testing.T) {
 		left: LeftPanel{
 			plStore: db,
 			playlists: []storage.Playlist{{
-				ID: pl.ID,
+				ID:   pl.ID,
 				Name: pl.Name,
 				Tracks: []storage.PlaylistTrack{{
 					ID: existingPath, Path: existingPath, Title: "Existing",

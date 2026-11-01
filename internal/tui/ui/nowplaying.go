@@ -4,8 +4,8 @@ import (
 	"strings"
 	"time"
 
-	"som/internal/domain"
-	"som/internal/tui/player"
+	"oto/internal/domain"
+	"oto/internal/tui/player"
 
 	"charm.land/bubbles/v2/spinner"
 	tea "charm.land/bubbletea/v2"

@@ -10,8 +10,8 @@ import (
 	"strings"
 	"time"
 
-	"som/internal/domain"
-	"som/internal/scraper"
+	"oto/internal/domain"
+	"oto/internal/scraper"
 
 	tea "charm.land/bubbletea/v2"
 )

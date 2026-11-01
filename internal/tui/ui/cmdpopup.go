@@ -10,8 +10,8 @@ import (
 	"strings"
 	"time"
 
-	"som/internal/domain"
-	"som/internal/storage"
+	"oto/internal/domain"
+	"oto/internal/storage"
 
 	tea "charm.land/bubbletea/v2"
 	"github.com/mattn/go-runewidth"

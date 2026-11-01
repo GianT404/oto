@@ -1,7 +1,7 @@
 package avrcp
 
 const (
-	dbusDest         = "org.mpris.MediaPlayer2.SOM"
+	dbusDest         = "org.mpris.MediaPlayer2.oto"
 	dbusPath         = "/org/mpris/MediaPlayer2"
 	dbusMediaPlayer2 = "org.mpris.MediaPlayer2"
 	dbusPlayerIface  = "org.mpris.MediaPlayer2.Player"

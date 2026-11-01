@@ -64,7 +64,7 @@ const savePlaylist = async (tracks: OfflineTrack[]) => {
 
 export const isDownloaded = async (id: string): Promise<boolean> => {
     const list = await getPlaylist();
-    return list.some(t => t.id === id);
+    return list.otoe(t => t.id === id);
 };
 
 export const getDeletedPlaylist = async (): Promise<OfflineTrack[]> => {

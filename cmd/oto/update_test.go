@@ -24,7 +24,7 @@ func TestAllowUnverified(t *testing.T) {
 		"garbage": false,
 	}
 	for env, want := range cases {
-		t.Setenv("SOM_ALLOW_UNVERIFIED", env)
+		t.Setenv("oto_ALLOW_UNVERIFIED", env)
 		if got := allowUnverified(); got != want {
 			t.Errorf("allowUnverified(%q) = %v, want %v", env, got, want)
 		}
@@ -32,11 +32,11 @@ func TestAllowUnverified(t *testing.T) {
 }
 
 func TestNewUpgradeVerifierEmptyKey(t *testing.T) {
-	old := somMinisignPublicKey
-	somMinisignPublicKey = ""
-	defer func() { somMinisignPublicKey = old }()
+	old := otoMinisignPublicKey
+	otoMinisignPublicKey = ""
+	defer func() { otoMinisignPublicKey = old }()
 
-	if _, err := newUpgradeVerifier("http://example.invalid/som.minisig"); err == nil {
+	if _, err := newUpgradeVerifier("http://example.invalid/oto.minisig"); err == nil {
 		t.Fatal("expected error when no embedded public key")
 	}
 }
@@ -65,17 +65,17 @@ func serveMinisig(t *testing.T, body []byte, status int) *httptest.Server {
 }
 
 func TestNewUpgradeVerifierValidSignature(t *testing.T) {
-	old := somMinisignPublicKey
-	defer func() { somMinisignPublicKey = old }()
+	old := otoMinisignPublicKey
+	defer func() { otoMinisignPublicKey = old }()
 
 	pub, priv := testKeypair(t)
 	pubText, err := pub.MarshalText()
 	if err != nil {
 		t.Fatalf("MarshalText: %v", err)
 	}
-	somMinisignPublicKey = string(pubText)
+	otoMinisignPublicKey = string(pubText)
 
-	bin := []byte("#!/bin/sh\necho fake som binary\n")
+	bin := []byte("#!/bin/sh\necho fake oto binary\n")
 	sig := minisign.Sign(priv, bin)
 	srv := serveMinisig(t, sig, http.StatusOK)
 
@@ -89,19 +89,19 @@ func TestNewUpgradeVerifierValidSignature(t *testing.T) {
 }
 
 func TestNewUpgradeVerifierWrongKey(t *testing.T) {
-	old := somMinisignPublicKey
-	defer func() { somMinisignPublicKey = old }()
+	old := otoMinisignPublicKey
+	defer func() { otoMinisignPublicKey = old }()
 
 	pub, _ := testKeypair(t)
 	pubText, err := pub.MarshalText()
 	if err != nil {
 		t.Fatalf("MarshalText: %v", err)
 	}
-	somMinisignPublicKey = string(pubText)
+	otoMinisignPublicKey = string(pubText)
 
 	// Ký bằng key khác (không phải key nhúng trong binary).
 	_, otherPriv := testKeypair(t)
-	bin := []byte("fake som binary")
+	bin := []byte("fake oto binary")
 	sig := minisign.Sign(otherPriv, bin)
 	srv := serveMinisig(t, sig, http.StatusOK)
 
@@ -115,12 +115,12 @@ func TestNewUpgradeVerifierWrongKey(t *testing.T) {
 }
 
 func TestNewUpgradeVerifierMissingSignature(t *testing.T) {
-	old := somMinisignPublicKey
-	defer func() { somMinisignPublicKey = old }()
+	old := otoMinisignPublicKey
+	defer func() { otoMinisignPublicKey = old }()
 
 	pub, _ := testKeypair(t)
 	pubText, _ := pub.MarshalText()
-	somMinisignPublicKey = string(pubText)
+	otoMinisignPublicKey = string(pubText)
 
 	srv := serveMinisig(t, nil, http.StatusNotFound)
 	if _, err := newUpgradeVerifier(srv.URL); err == nil {

@@ -9,7 +9,7 @@ import (
 )
 
 func installDesktopAssets(exePath string) error {
-	home, err := somUserHome()
+	home, err := otoUserHome()
 	if err != nil {
 		return err
 	}
@@ -46,15 +46,15 @@ func installDesktopAssets(exePath string) error {
 	}
 
 	desktop := bytes.ReplaceAll(
-		somDesktop,
-		[]byte("@SOM_EXEC@"),
+		otoDesktop,
+		[]byte("@oto_EXEC@"),
 		[]byte(exePath),
 	)
 
-	iconPath := filepath.Join(iconDir, "som.svg")
-	desktopPath := filepath.Join(appDir, "som.desktop")
+	iconPath := filepath.Join(iconDir, "oto.svg")
+	desktopPath := filepath.Join(appDir, "oto.desktop")
 
-	if err := os.WriteFile(iconPath, somIcon, 0o644); err != nil {
+	if err := os.WriteFile(iconPath, otoIcon, 0o644); err != nil {
 		return fmt.Errorf("write icon: %w", err)
 	}
 	if err := fixSudoOwnership(iconPath); err != nil {
@@ -74,7 +74,7 @@ func installDesktopAssets(exePath string) error {
 
 	return nil
 }
-func somUserHome() (string, error) {
+func otoUserHome() (string, error) {
 	if sudoUser := os.Getenv("SUDO_USER"); sudoUser != "" {
 		u, err := user.Lookup(sudoUser)
 		if err != nil {

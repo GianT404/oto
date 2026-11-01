@@ -14,8 +14,8 @@ import (
 	"strings"
 	"time"
 
-	"som/internal/domain"
-	"som/internal/fileutil"
+	"oto/internal/domain"
+	"oto/internal/fileutil"
 )
 
 type HTTPProvider struct {

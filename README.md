@@ -1,9 +1,9 @@
 
 <p align="center">
-  <img src="./assets/logo.svg" alt="SOM Logo" width="120" />
+  <img src="./assets/logo.svg" alt="oto Logo" width="120" />
 </p>
 
-<h1 align="center">SOM</h1>
+<h1 align="center">oto</h1>
 
 <p align="center">
   <b>Terminal music player</b>
@@ -29,7 +29,7 @@ https://github.com/user-attachments/assets/d7bf017b-7a73-4f7e-8d07-964e5f460249
 ## Mobile
 
 <p align="center">
-  <img src="./assets/thumbnail.png" alt="SOM" width="100%" />
+  <img src="./assets/thumbnail.png" alt="oto" width="100%" />
 </p>
 
 ---
@@ -50,7 +50,7 @@ https://github.com/user-attachments/assets/d7bf017b-7a73-4f7e-8d07-964e5f460249
 | Mouse Support | Click sidebar, double-click to play, wheel scroll, progress bar seek |
 | Gapless Playback | Pre-decodes next track when current has <3s remaining |
 | Resilient YouTube | Automatic yt-dlp client fallback against 403s |
-| Self Install/Update | `som --install`, `som --upgrade`, minisign signature verification |
+| Self Install/Update | `oto --install`, `oto --upgrade`, minisign signature verification |
 | CLI & Completion | Cobra with auto-completion for Zsh, Bash, Fish |
 | AVRCP/MPRIS2 | Bluetooth media controls on Linux desktop |
 
@@ -68,27 +68,27 @@ https://github.com/user-attachments/assets/d7bf017b-7a73-4f7e-8d07-964e5f460249
 
 ```bash
 # Linux
-curl -fsSL https://raw.githubusercontent.com/GianT404/SOM/main/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/GianT404/oto/main/scripts/install.sh | bash
 ```
 
-SOM installs to `~/.local/bin/som` on Linux. Add `~/.local/bin` to `PATH` if your shell does not already include it. After installation, updates work without `sudo`:
+oto installs to `~/.local/bin/oto` on Linux. Add `~/.local/bin` to `PATH` if your shell does not already include it. After installation, updates work without `sudo`:
 
 ```bash
-som --upgrade
+oto --upgrade
 ```
 
 
 ```powershell
 # Windows
-curl.exe -O https://raw.githubusercontent.com/GianT404/SOM/main/scripts/install.ps1 | iex
+curl.exe -O https://raw.githubusercontent.com/GianT404/oto/main/scripts/install.ps1 | iex
 ```
 
 ### Build TUI
 
 ```bash
-git clone https://github.com/GianT404/SOM.git && cd SOM
-go build -o som ./cmd/som
-./som
+git clone https://github.com/GianT404/oto.git && cd oto
+go build -o oto ./cmd/oto
+./oto
 ```
 
 ### Build Backend
@@ -104,10 +104,10 @@ Default port `8080`. Configure via env vars:
 |----------|---------|-------------|
 | `PORT` | `8080` | Server port |
 | `HOST` | (all) | Bind host |
-| `SOM_DOWNLOAD_DIR` | `~/.local/share/som` | Download directory |
-| `SOM_YTDLP_COOKIES` | — | Netscape `cookies.txt` for age-gated/restricted content |
-| `SOM_YTDLP_ARGS` | — | Extra yt-dlp args (e.g. `--proxy socks5://localhost:9050`) |
-| `SOM_YTDLP_CLIENTS` | `web_embedded,web,tv_embedded,android,mweb,ios` | yt-dlp client fallback chain |
+| `oto_DOWNLOAD_DIR` | `~/.local/share/oto` | Download directory |
+| `oto_YTDLP_COOKIES` | — | Netscape `cookies.txt` for age-gated/restricted content |
+| `oto_YTDLP_ARGS` | — | Extra yt-dlp args (e.g. `--proxy socks5://localhost:9050`) |
+| `oto_YTDLP_CLIENTS` | `web_embedded,web,tv_embedded,android,mweb,ios` | yt-dlp client fallback chain |
 
 ### Build Mobile App
 
@@ -156,7 +156,7 @@ Configurable in **Settings** (`Esc`), default OFF.
 
 ### Logs
 
-Logs tab captures all `log` output in-memory (last 2000 lines). Never written to disk during normal operation. On crash/panic, dumped to `~/crash_som_tui_<timestamp>.log`.
+Logs tab captures all `log` output in-memory (last 2000 lines). Never written to disk during normal operation. On crash/panic, dumped to `~/crash_oto_tui_<timestamp>.log`.
 
 ---
 
@@ -165,14 +165,14 @@ Logs tab captures all `log` output in-memory (last 2000 lines). Never written to
 ```bash
 # Zsh
 mkdir -p ~/.zfunc
-som completion zsh > ~/.zfunc/_som
+oto completion zsh > ~/.zfunc/_oto
 # Add to ~/.zshrc: fpath=(~/.zfunc $fpath) && autoload -U compinit && compinit
 
 # Bash
-som completion bash > /etc/bash_completion.d/som
+oto completion bash > /etc/bash_completion.d/oto
 
 # Fish
-som completion fish > ~/.config/fish/completions/som.fish
+oto completion fish > ~/.config/fish/completions/oto.fish
 ```
 
 ---
@@ -181,13 +181,13 @@ som completion fish > ~/.config/fish/completions/som.fish
 
 | Flag | Description |
 |------|-------------|
-| `--server <URL>` | Use a remote SOM backend |
+| `--server <URL>` | Use a remote oto backend |
 | `--api-key <KEY>` | Authenticate with the remote backend |
 | `--download-dir <DIR>` | Set the music library directory |
-| `--install` | Install SOM to a user-local bin directory |
-| `--upgrade` | Install the latest SOM release |
+| `--install` | Install oto to a user-local bin directory |
+| `--upgrade` | Install the latest oto release |
 | `--check-update` | Check for a newer release |
-| `--uninstall` | Remove the user-local SOM installation |
+| `--uninstall` | Remove the user-local oto installation |
 | `--update-ytdlp` | Update yt-dlp and exit |
 | `--version` | Print the version and exit |
 | `--changelog` | Print the current release changelog |
@@ -199,10 +199,10 @@ som completion fish > ~/.config/fish/completions/som.fish
 
 If streaming fails with `403 Forbidden`:
 
-1. Update yt-dlp: `som --update-ytdlp`
-2. Export cookies from a logged-in browser (`Get cookies.txt LOCALLY` extension) → set `SOM_YTDLP_COOKIES=/path/to/cookies.txt`
-3. Override client chain: `SOM_YTDLP_CLIENTS=web_embedded,android`
-4. Use proxy: `SOM_YTDLP_ARGS="--proxy socks5://localhost:9050"`
+1. Update yt-dlp: `oto --update-ytdlp`
+2. Export cookies from a logged-in browser (`Get cookies.txt LOCALLY` extension) → set `oto_YTDLP_COOKIES=/path/to/cookies.txt`
+3. Override client chain: `oto_YTDLP_CLIENTS=web_embedded,android`
+4. Use proxy: `oto_YTDLP_ARGS="--proxy socks5://localhost:9050"`
 
 ---
 

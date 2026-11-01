@@ -3,7 +3,7 @@ const { withAppBuildGradle } = require('@expo/config-plugins');
 /**
  * Thêm signingConfig release vào app/build.gradle, đọc thông tin keystore
  * từ biến môi trường do GitHub Actions bơm vào (xem
- * .github/workflows/release-som-mobile.yml):
+ * .github/workflows/release-oto-mobile.yml):
  *   ANDROID_KEYSTORE_FILE, ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS, ANDROID_KEY_PASSWORD
  *
  * Nếu thiếu env thì fallback về file release.keystore với mật khẩu mặc định

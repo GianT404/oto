@@ -271,7 +271,7 @@ const SettingsScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
                 </View>
 
                 {/* Version */}
-                <Text style={styles.version}>SOM • Version 4.2.0</Text>
+                <Text style={styles.version}>oto • Version 4.2.0</Text>
             </ScrollView>
 
             {/* ═══ Tooltip Modal ═══ */}

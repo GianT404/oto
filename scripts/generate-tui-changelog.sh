@@ -3,7 +3,7 @@ set -euo pipefail
 
 current_tag="${1:?Usage: generate-tui-changelog.sh <tui-tag>}"
 prefix="tui-v"
-output="cmd/som/changelog.txt"
+output="cmd/oto/changelog.txt"
 
 if [[ "$current_tag" != "$prefix"* ]]; then
     echo "Expected a TUI tag, got: $current_tag" >&2
@@ -41,7 +41,7 @@ fi
 commits="$(git log --no-decorate --format='  • %h %s' "$range_spec" -- internal/)"
 
 {
-    printf 'SOM TUI changelog — %s\n' "$current_tag"
+    printf 'oto TUI changelog — %s\n' "$current_tag"
     if [[ -n "$previous_tag" ]]; then
         printf 'Changes since %s:\n\n' "$previous_tag"
     else

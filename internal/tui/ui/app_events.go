@@ -7,10 +7,10 @@ import (
 	"strconv"
 	"time"
 
-	"som/internal/domain"
-	"som/internal/storage"
-	"som/internal/tui/avrcp"
-	"som/internal/tui/player"
+	"oto/internal/domain"
+	"oto/internal/storage"
+	"oto/internal/tui/avrcp"
+	"oto/internal/tui/player"
 
 	tea "charm.land/bubbletea/v2"
 )

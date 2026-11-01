@@ -5,12 +5,12 @@ import (
 	"log"
 	"os"
 
-	"som/internal/storage"
+	"oto/internal/storage"
 )
 
 func runLibraryStats(downloadDir string) error {
 	if downloadDir == "" {
-		if env := os.Getenv("SOM_DOWNLOAD_DIR"); env != "" {
+		if env := os.Getenv("oto_DOWNLOAD_DIR"); env != "" {
 			downloadDir = env
 		} else {
 			downloadDir = storage.DefaultDir()

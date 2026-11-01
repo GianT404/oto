@@ -3,8 +3,8 @@ package ui
 import (
 	"testing"
 
-	"som/internal/domain"
-	"som/internal/tui/player"
+	"oto/internal/domain"
+	"oto/internal/tui/player"
 )
 
 func TestPlayTrackCmdRecordsPreviousTrackOnceInRandomMode(t *testing.T) {

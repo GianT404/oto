@@ -18,11 +18,11 @@ import (
 	"github.com/minio/selfupdate"
 )
 
-const releasesListAPI = "https://api.github.com/repos/GianT404/SOM/releases?per_page=30"
+const releasesListAPI = "https://api.github.com/repos/GianT404/oto/releases?per_page=30"
 
-const releasesAtomURL = "https://github.com/GianT404/SOM/releases.atom"
+const releasesAtomURL = "https://github.com/GianT404/oto/releases.atom"
 
-const repoDownloadBase = "https://github.com/GianT404/SOM/releases/download"
+const repoDownloadBase = "https://github.com/GianT404/oto/releases/download"
 
 type ghAsset struct {
 	Name               string `json:"name"`
@@ -42,7 +42,7 @@ func runCheckUpdate(current string) error {
 			"cannot compare with the latest GitHub release")
 	}
 
-	assetName := fmt.Sprintf("som-%s-%s", runtime.GOOS, runtime.GOARCH)
+	assetName := fmt.Sprintf("oto-%s-%s", runtime.GOOS, runtime.GOARCH)
 	if runtime.GOOS == "windows" {
 		assetName += ".exe"
 	}
@@ -59,7 +59,7 @@ func runCheckUpdate(current string) error {
 
 	fmt.Printf("A new version %s is available — you are on %s.\n", target.TagName, current)
 	printChangelog(current, target.TagName)
-	fmt.Println("Run `som --upgrade` to install it.")
+	fmt.Println("Run `oto --upgrade` to install it.")
 	return nil
 }
 
@@ -69,7 +69,7 @@ func runSelfUpdate(current string) error {
 			"cannot compare with the latest GitHub release")
 	}
 
-	assetName := fmt.Sprintf("som-%s-%s", runtime.GOOS, runtime.GOARCH)
+	assetName := fmt.Sprintf("oto-%s-%s", runtime.GOOS, runtime.GOARCH)
 	if runtime.GOOS == "windows" {
 		assetName += ".exe"
 	}
@@ -98,9 +98,9 @@ func runSelfUpdate(current string) error {
 	verifier, verr := newUpgradeVerifier(downloadURL + ".minisig")
 	if verr != nil {
 		if !allowUnverified() {
-			return fmt.Errorf("refusing to update: %v\nset SOM_ALLOW_UNVERIFIED=1 to skip verification (not recommended)", verr)
+			return fmt.Errorf("refusing to update: %v\nset oto_ALLOW_UNVERIFIED=1 to skip verification (not recommended)", verr)
 		}
-		fmt.Println("warning: SOM_ALLOW_UNVERIFIED=1 — skipping signature verification")
+		fmt.Println("warning: oto_ALLOW_UNVERIFIED=1 — skipping signature verification")
 	}
 
 	downloadClient := &http.Client{Timeout: 5 * time.Minute}
@@ -146,24 +146,24 @@ func runSelfUpdate(current string) error {
 		fmt.Printf("\r[%-40s] 100%%  \n", strings.Repeat("#", 40))
 	}
 
-	fmt.Println("Successfully updated to", target.TagName, "— run `som` again to use the new version.")
+	fmt.Println("Successfully updated to", target.TagName, "— run `oto` again to use the new version.")
 	return nil
 }
 
 // newUpgradeVerifier tải chữ ký minisign của bản phát hành và dựng bộ xác thực bằng public key nhúng trong binary.
 func newUpgradeVerifier(sigURL string) (*selfupdate.Verifier, error) {
-	if somMinisignPublicKey == "" {
+	if otoMinisignPublicKey == "" {
 		return nil, fmt.Errorf("this binary was built without an embedded signing key")
 	}
 	v := selfupdate.NewVerifier()
-	if err := v.LoadFromURL(sigURL, somMinisignPublicKey, nil); err != nil {
+	if err := v.LoadFromURL(sigURL, otoMinisignPublicKey, nil); err != nil {
 		return nil, fmt.Errorf("failed to fetch or parse signature %s: %w", sigURL, err)
 	}
 	return v, nil
 }
 
 func allowUnverified() bool {
-	switch strings.ToLower(strings.TrimSpace(os.Getenv("SOM_ALLOW_UNVERIFIED"))) {
+	switch strings.ToLower(strings.TrimSpace(os.Getenv("oto_ALLOW_UNVERIFIED"))) {
 	case "1", "true", "yes", "y":
 		return true
 	}
@@ -206,7 +206,7 @@ func fetchReleases() ([]ghRelease, error) {
 		return nil, err
 	}
 	req.Header.Set("Accept", "application/vnd.github+json")
-	req.Header.Set("User-Agent", "som-tui")
+	req.Header.Set("User-Agent", "oto-tui")
 	if token := os.Getenv("GITHUB_TOKEN"); token != "" {
 		req.Header.Set("Authorization", "Bearer "+token)
 	}
@@ -339,7 +339,7 @@ func versionCompare(a, b string) int {
 	return 0
 }
 
-const compareAPI = "https://api.github.com/repos/GianT404/SOM/compare/%s...%s"
+const compareAPI = "https://api.github.com/repos/GianT404/oto/compare/%s...%s"
 
 type ghCompareCommit struct {
 	SHA    string `json:"sha"`
@@ -389,7 +389,7 @@ func fetchCompareCommits(base, head string) ([]ghCompareCommit, error) {
 		return nil, err
 	}
 	req.Header.Set("Accept", "application/vnd.github+json")
-	req.Header.Set("User-Agent", "som-tui")
+	req.Header.Set("User-Agent", "oto-tui")
 	if token := os.Getenv("GITHUB_TOKEN"); token != "" {
 		req.Header.Set("Authorization", "Bearer "+token)
 	}

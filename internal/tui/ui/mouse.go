@@ -3,7 +3,7 @@ package ui
 import (
 	"time"
 
-	tuilayout "som/internal/tui/layout"
+	tuilayout "oto/internal/tui/layout"
 
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
@@ -205,7 +205,7 @@ func loadMouseSetting(a *App) {
 }
 
 func (a *App) listRowOrigin() (int, bool) {
-	ct := a.somRowHeight() + 1
+	ct := a.otoRowHeight() + 1
 	switch a.sidebarActive {
 	case SideSearch:
 		if a.left.input.Focused() && len(a.left.suggestions) > 0 {
@@ -410,7 +410,7 @@ func (a *App) stepListCursor(delta int) {
 }
 
 func (a *App) tryFocusSearchInput(m tea.MouseClickMsg) bool {
-	ct := a.somRowHeight() + 1
+	ct := a.otoRowHeight() + 1
 	if m.Y != ct+1 {
 		return false
 	}
@@ -523,7 +523,7 @@ func (a *App) handleMouseClick(m tea.MouseClickMsg) tea.Cmd {
 	if cmd, handled := a.clickGlobalHelpHint(m); handled {
 		return cmd
 	}
-	if cmd, handled := a.clickSomRowHint(m); handled {
+	if cmd, handled := a.clickotoRowHint(m); handled {
 		return cmd
 	}
 
@@ -531,7 +531,7 @@ func (a *App) handleMouseClick(m tea.MouseClickMsg) tea.Cmd {
 	if a.seekFromProgressClick(m) {
 		return func() tea.Msg { return PlaybackTickMsg{} }
 	}
-	contentTop := a.somRowHeight() + 1
+	contentTop := a.otoRowHeight() + 1
 
 	// Sidebar: đổi tab.
 	if m.X < sidebarWidth {
@@ -687,7 +687,7 @@ func (a *App) clickLanguagePopup(m tea.MouseClickMsg) (tea.Cmd, bool) {
 	}
 
 	layout := a.uiLayout()
-	contentTop := a.somRowHeight() + 1
+	contentTop := a.otoRowHeight() + 1
 	rowTop := contentTop + 1
 	visibleRows := a.right.lyricsHeight()
 	if a.sidebarActive == SideDownloads || a.sidebarActive == SidePlaylists {
@@ -740,12 +740,12 @@ func (a *App) clickGlobalHelpHint(m tea.MouseClickMsg) (tea.Cmd, bool) {
 	return nil, false
 }
 
-func (a *App) clickSomRowHint(m tea.MouseClickMsg) (tea.Cmd, bool) {
-	if m.Button != tea.MouseLeft || a.hideLogo || a.somRowHeight() == 0 || m.Y != a.somRowHeight()-1 {
+func (a *App) clickotoRowHint(m tea.MouseClickMsg) (tea.Cmd, bool) {
+	if m.Button != tea.MouseLeft || a.hideLogo || a.otoRowHeight() == 0 || m.Y != a.otoRowHeight()-1 {
 		return nil, false
 	}
 
-	items := a.somRowHints()
+	items := a.otoRowHints()
 	x := a.width - lipgloss.Width(renderHintItems(items))
 	for _, item := range items {
 		width := lipgloss.Width(item.text)

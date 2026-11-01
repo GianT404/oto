@@ -6,7 +6,7 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 
-	"som/internal/storage"
+	"oto/internal/storage"
 )
 
 func kp(code rune) tea.KeyPressMsg {

@@ -131,7 +131,7 @@ func (p LeftPanel) renderLocalList(innerW int, selected map[string]bool, selectM
 		if p.input.Focused() && strings.TrimSpace(p.input.Value()) != "" {
 			return DimItemStyle.Render(" No matching downloaded files found.") + "\n"
 		}
-		return DimItemStyle.Render(" No downloaded files in "+p.downloadDir+"/") + "\n"
+		return DimItemStyle.Render("No track available, press 1 and type to search. ") + "\n"
 	}
 
 	return renderSharedTrackList(

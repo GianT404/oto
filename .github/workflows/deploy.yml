@@ -1,4 +1,4 @@
-name: Deploy SOM Backend to GCP
+name: Deploy oto Backend to GCP
 
 on:
   push:
@@ -58,7 +58,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/som-backend:latest
+          tags: ${{ secrets.DOCKER_USERNAME }}/oto-backend:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -73,12 +73,12 @@ jobs:
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd ~/SOM
+            cd ~/oto
             git fetch --all
             git reset --hard origin/main
             
             # Ghi file .env an toàn hơn
-            echo "SOM_API_KEY=${{ secrets.SOM_API_KEY }}" > .env
+            echo "oto_API_KEY=${{ secrets.oto_API_KEY }}" > .env
             echo "BANNED_DEVICES=${{ secrets.BANNED_DEVICES }}" >> .env
             
             docker compose down --remove-orphans

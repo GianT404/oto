@@ -3,8 +3,8 @@ package ui
 import (
 	"time"
 
-	"som/internal/domain"
-	"som/internal/tui/player"
+	"oto/internal/domain"
+	"oto/internal/tui/player"
 
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"

@@ -42,4 +42,4 @@ echo "==> Push tag..."
 git push origin "$TAG"
 
 echo
-echo "Xong! Tag ${TAG} đã kích hoạt release-som-mobile.yml (APK)."
+echo "Xong! Tag ${TAG} đã kích hoạt release-oto-mobile.yml (APK)."

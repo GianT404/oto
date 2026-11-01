@@ -39,7 +39,7 @@ func (r *rootMethods) Raise() *dbus.Error {
 		"--match",
 		"id:"+windowID,
 	).Run(); err != nil {
-		log.Printf("[avrcp] failed to focus SOM window: %v", err)
+		log.Printf("[avrcp] failed to focus oto window: %v", err)
 	}
 
 	return nil
@@ -71,7 +71,7 @@ func New() *Server {
 				"CanQuit":             dbus.MakeVariant(true),
 				"CanRaise":            dbus.MakeVariant(true),
 				"HasTrackList":        dbus.MakeVariant(false),
-				"Identity":            dbus.MakeVariant("SOM"),
+				"Identity":            dbus.MakeVariant("oto"),
 				"SupportedUriSchemes": dbus.MakeVariant([]string{}),
 				"SupportedMimeTypes":  dbus.MakeVariant([]string{}),
 			},

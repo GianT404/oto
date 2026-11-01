@@ -42,4 +42,4 @@ echo "==> Push tag..."
 git push origin "$TAG"
 
 echo
-echo "Xong! Tag ${TAG} đã kích hoạt release-som.yml (TUI)."
+echo "Xong! Tag ${TAG} đã kích hoạt release-oto.yml (TUI)."

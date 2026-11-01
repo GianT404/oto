@@ -5,9 +5,9 @@ import (
 	"strings"
 	"time"
 
-	tuilayout "som/internal/tui/layout"
-	"som/internal/tui/player"
-	"som/internal/tui/render"
+	tuilayout "oto/internal/tui/layout"
+	"oto/internal/tui/player"
+	"oto/internal/tui/render"
 
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
@@ -143,7 +143,7 @@ func (a *App) renderBaseView(layout tuilayout.UILayout, contentRow string) strin
 		a.activePreset,
 		a.playback.NowPlay,
 	)
-	somRow := a.renderSomRow(dashboard)
+	otoRow := a.renderotoRow(dashboard)
 
 	borderStyle := lipgloss.NewStyle().Foreground(colorBorder)
 	sepLeft := strings.Repeat("─", sidebarWidth)
@@ -163,7 +163,7 @@ func (a *App) renderBaseView(layout tuilayout.UILayout, contentRow string) strin
 	progressBar := a.renderProgressBar(a.width)
 
 	return render.BaseFrame(
-		somRow,
+		otoRow,
 		sep,
 		contentRow,
 		status,
@@ -194,7 +194,7 @@ func (a *App) globalHelpHints() []globalHelpHint {
 	}
 }
 
-func (a *App) somRowHints() []globalHelpHint {
+func (a *App) otoRowHints() []globalHelpHint {
 	switch a.sidebarActive {
 	case SideSearch:
 		if a.left.showPlInput {
@@ -398,7 +398,7 @@ func (a *App) setViewCursor(v *tea.View, contentTop int) {
 }
 
 // render lyrics hoặc import
-func (a *App) renderSomRow(dashboard string) string {
+func (a *App) renderotoRow(dashboard string) string {
 	if a.playingPlaylistName != "" && !a.hideLogo {
 		lines := strings.Split(dashboard, "\n")
 		if len(lines) > 0 {
@@ -416,7 +416,7 @@ func (a *App) renderSomRow(dashboard string) string {
 		}
 	}
 
-	items := a.somRowHints()
+	items := a.otoRowHints()
 	if len(items) == 0 {
 		return dashboard
 	}

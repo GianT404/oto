@@ -4,7 +4,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"som/internal/storage"
+	"oto/internal/storage"
 
 	"charm.land/bubbles/v2/textinput"
 	tea "charm.land/bubbletea/v2"

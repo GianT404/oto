@@ -31,8 +31,8 @@ func main() {
 
 func usage() {
 	fmt.Fprintln(os.Stderr, "usage:")
-	fmt.Fprintln(os.Stderr, "  som-sign gen")
-	fmt.Fprintln(os.Stderr, "  SOM_MINISIGN_KEY=<base64 secret> som-sign sign <file>...")
+	fmt.Fprintln(os.Stderr, "  oto-sign gen")
+	fmt.Fprintln(os.Stderr, "  oto_MINISIGN_KEY=<base64 secret> oto-sign sign <file>...")
 	os.Exit(2)
 }
 
@@ -54,20 +54,20 @@ func gen() {
 		os.Exit(1)
 	}
 
-	fmt.Println("--- public key (paste into cmd/som/signkey.go) ---")
+	fmt.Println("--- public key (paste into cmd/oto/signkey.go) ---")
 	fmt.Println(string(pubText))
-	fmt.Println("--- secret key base64 (set as GitHub Actions secret SOM_MINISIGN_KEY) ---")
+	fmt.Println("--- secret key base64 (set as GitHub Actions secret oto_MINISIGN_KEY) ---")
 	fmt.Println(base64.StdEncoding.EncodeToString(secret))
 }
 
 func sign(files ...string) error {
-	raw := os.Getenv("SOM_MINISIGN_KEY")
+	raw := os.Getenv("oto_MINISIGN_KEY")
 	if raw == "" {
-		return fmt.Errorf("SOM_MINISIGN_KEY is empty")
+		return fmt.Errorf("oto_MINISIGN_KEY is empty")
 	}
 	keyBytes, err := base64.StdEncoding.DecodeString(raw)
 	if err != nil {
-		return fmt.Errorf("SOM_MINISIGN_KEY is not valid base64: %w", err)
+		return fmt.Errorf("oto_MINISIGN_KEY is not valid base64: %w", err)
 	}
 	priv, err := minisign.DecryptKey("", keyBytes)
 	if err != nil {

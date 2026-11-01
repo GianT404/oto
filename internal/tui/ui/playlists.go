@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"som/internal/storage"
+	"oto/internal/storage"
 
 	"charm.land/lipgloss/v2"
 	"github.com/mattn/go-runewidth"

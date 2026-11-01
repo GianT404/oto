@@ -6,11 +6,11 @@ import (
 	"strings"
 	"time"
 
-	"som/internal/domain"
-	"som/internal/storage"
-	"som/internal/tui/avrcp"
-	"som/internal/tui/layout"
-	"som/internal/tui/player"
+	"oto/internal/domain"
+	"oto/internal/storage"
+	"oto/internal/tui/avrcp"
+	"oto/internal/tui/layout"
+	"oto/internal/tui/player"
 
 	"charm.land/bubbles/v2/spinner"
 	"charm.land/bubbles/v2/textinput"
@@ -579,8 +579,8 @@ func (a *App) updateComponents(msg tea.Msg) []tea.Cmd {
 	return cmds
 }
 
-// somRowHeight trả số dòng banner SOM cần dành chỗ (0 khi đã ẩn logo).
-func (a *App) somRowHeight() int {
+// otoRowHeight trả số dòng banner oto cần dành chỗ (0 khi đã ẩn logo).
+func (a *App) otoRowHeight() int {
 	if a.hideLogo {
 		return 0
 	}
@@ -592,7 +592,7 @@ func (a *App) uiLayout() layout.UILayout {
 		a.width,
 		a.height,
 		sidebarWidth,
-		a.somRowHeight(),
+		a.otoRowHeight(),
 		a.hideHint,
 	)
 }

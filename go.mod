@@ -1,4 +1,4 @@
-module som
+module oto
 
 go 1.26
 

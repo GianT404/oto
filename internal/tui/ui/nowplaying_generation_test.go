@@ -3,7 +3,7 @@ package ui
 import (
 	"testing"
 
-	"som/internal/domain"
+	"oto/internal/domain"
 )
 
 func TestLeftPanelIgnoresStaleTrackChange(t *testing.T) {

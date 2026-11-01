@@ -8,9 +8,9 @@ import (
 	"strings"
 	"time"
 
-	"som/internal/domain"
-	"som/internal/storage"
-	"som/internal/tui/player"
+	"oto/internal/domain"
+	"oto/internal/storage"
+	"oto/internal/tui/player"
 
 	tea "charm.land/bubbletea/v2"
 )

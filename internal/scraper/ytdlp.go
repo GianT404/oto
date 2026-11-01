@@ -19,7 +19,7 @@ import (
 
 	"github.com/kkdai/youtube/v2"
 
-	"som/internal/cache"
+	"oto/internal/cache"
 )
 
 type YtdlpScraper struct {
@@ -59,9 +59,9 @@ var (
 
 func loadYtConfig() {
 	ytConfigOnce.Do(func() {
-		extraYtArgs = strings.Fields(os.Getenv("SOM_YTDLP_ARGS"))
-		cookiesPath = strings.TrimSpace(os.Getenv("SOM_YTDLP_COOKIES"))
-		if v := strings.TrimSpace(os.Getenv("SOM_YTDLP_CLIENTS")); v != "" {
+		extraYtArgs = strings.Fields(os.Getenv("oto_YTDLP_ARGS"))
+		cookiesPath = strings.TrimSpace(os.Getenv("oto_YTDLP_COOKIES"))
+		if v := strings.TrimSpace(os.Getenv("oto_YTDLP_CLIENTS")); v != "" {
 			for _, c := range strings.Split(v, ",") {
 				if c = strings.TrimSpace(c); c != "" {
 					clientsList = append(clientsList, c)
@@ -103,7 +103,7 @@ func markClientSuccess(c string) {
 	preferredClient = c
 }
 
-// ytBaseArgs trả args nền tảng cho mọi lệnh yt-dlp: flags ổn định + cookies + extra args từ SOM_YTDLP_ARGS.
+// ytBaseArgs trả args nền tảng cho mọi lệnh yt-dlp: flags ổn định + cookies + extra args từ oto_YTDLP_ARGS.
 func ytBaseArgs() []string {
 	loadYtConfig()
 	args := []string{"--no-warnings", "--force-ipv4"}
@@ -150,7 +150,7 @@ func ytRetryable(errMsg string) bool {
 	return false
 }
 
-const ytOutdatedHint = "yt-dlp có thể đã cũ — chạy `som --update-ytdlp` để cập nhật"
+const ytOutdatedHint = "yt-dlp có thể đã cũ — chạy `oto --update-ytdlp` để cập nhật"
 
 func withYtHint(err error) error {
 	if err == nil {
@@ -180,7 +180,7 @@ var ytdlpCacheDir = resolveYtdlpCacheDir()
 func resolveYtdlpCacheDir() string {
 	dir := os.Getenv("YTDLP_CACHE_DIR")
 	if dir == "" {
-		dir = "/var/cache/som/yt-dlp"
+		dir = "/var/cache/oto/yt-dlp"
 	}
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		log.Printf("ytdlp: khong tao duoc cache dir %s: %v — dung cache mac dinh cua yt-dlp (khong persistent)", dir, err)
@@ -550,7 +550,7 @@ func (y *YtdlpScraper) Search(ctx context.Context, keyword string, offset int) (
 	go func() {
 		defer close(resultCh)
 		scanner := bufio.NewScanner(stdout)
-		// Allow up to 1 MB per line (some JSON can be big).
+		// Allow up to 1 MB per line (otoe JSON can be big).
 		scanner.Buffer(make([]byte, 0, 64*1024), 1024*1024)
 
 		for scanner.Scan() {
@@ -674,13 +674,13 @@ func (y *YtdlpScraper) GetStreamInfo(ctx context.Context, videoID string) (*Stre
 }
 
 // fastPathEnabled bật khi NewYtdlpScraperFastPath được dùng (server), hoặc
-// khi set SOM_YTDLP_FASTPATH=1. Lib youtube/v2 nhanh hơn nhưng URL có thể bị
+// khi set oto_YTDLP_FASTPATH=1. Lib youtube/v2 nhanh hơn nhưng URL có thể bị
 // 403 IP-binding nếu client fetch trực tiếp — đó là lý do TUI local tắt.
 func (y *YtdlpScraper) fastPathEnabled() bool {
 	if y != nil && y.fastPath {
 		return true
 	}
-	return strings.TrimSpace(os.Getenv("SOM_YTDLP_FASTPATH")) == "1"
+	return strings.TrimSpace(os.Getenv("oto_YTDLP_FASTPATH")) == "1"
 }
 
 func parseStreamInfo(raw, videoID string) (*StreamInfo, error) {

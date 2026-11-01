@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-REPO="GianT404/SOM"
+REPO="GianT404/oto"
 INSTALL_DIR="$HOME/.local/bin"
 
 info()  { printf '\033[1;34m==>\033[0m %s\n' "$1"; }
@@ -53,7 +53,7 @@ latest_release_with_asset() {
 		done
 }
 
-install_som() {
+install_oto() {
 	local os arch asset tag tmp url resolved
 	case "$(uname -s)" in
 		Linux)  os="linux" ;;
@@ -66,7 +66,7 @@ install_som() {
 		*) error "CPU architecture not supported: $(uname -m)" ;;
 	esac
 
-	asset="som-${os}-${arch}"
+	asset="oto-${os}-${arch}"
 	info "Looking for the latest build of ($asset)..."
 
 	# "releases/latest" points to the most recently created release (e.g. a
@@ -79,21 +79,21 @@ install_som() {
 	tmp="$(mktemp -d)"
 	url="https://github.com/$REPO/releases/download/$tag/$asset"
 	info "($asset) <- $tag"
-	curl -fsSL "$url" -o "$tmp/som"
-	chmod +x "$tmp/som"
+	curl -fsSL "$url" -o "$tmp/oto"
+	chmod +x "$tmp/oto"
 
 	mkdir -p "$INSTALL_DIR"
-	info "Installing $INSTALL_DIR/som ..."
-	mv "$tmp/som" "$INSTALL_DIR/som"
+	info "Installing $INSTALL_DIR/oto ..."
+	mv "$tmp/oto" "$INSTALL_DIR/oto"
 	rm -rf "$tmp"
 
-	# Warn if an older som earlier in PATH shadows the one we just installed.
-	resolved="$(type -P som 2>/dev/null || true)"
-	if [ -n "$resolved" ] && [ "$resolved" != "$INSTALL_DIR/som" ]; then
-		warn "PATH prefers '$resolved' (an old copy) over the new $INSTALL_DIR/som."
+	# Warn if an older oto earlier in PATH shadows the one we just installed.
+	resolved="$(type -P oto 2>/dev/null || true)"
+	if [ -n "$resolved" ] && [ "$resolved" != "$INSTALL_DIR/oto" ]; then
+		warn "PATH prefers '$resolved' (an old copy) over the new $INSTALL_DIR/oto."
 		warn "Remove the old copy to use the new one:  rm \"$resolved\""
 	fi
 }
 
 install_deps
-install_som
+install_oto

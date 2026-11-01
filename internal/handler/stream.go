@@ -14,7 +14,7 @@ import (
 	"sync"
 	"time"
 
-	"som/internal/scraper"
+	"oto/internal/scraper"
 )
 
 // StreamHandler serves audio for playback.

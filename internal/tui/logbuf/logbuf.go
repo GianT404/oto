@@ -124,7 +124,7 @@ func CrashDir() string {
 }
 
 func crashFilename() string {
-	return fmt.Sprintf("crash_som_tui_%s.log", time.Now().Format("20060102_150405"))
+	return fmt.Sprintf("crash_oto_tui_%s.log", time.Now().Format("20060102_150405"))
 }
 
 func (r *Ring) DumpCrash(note string) string {
@@ -142,7 +142,7 @@ func (r *Ring) DumpCrashTo(path, note string) error {
 	n := runtime.Stack(stack, true)
 
 	var b strings.Builder
-	b.WriteString("SOM TUI crash dump\n")
+	b.WriteString("oto TUI crash dump\n")
 	b.WriteString("time: " + time.Now().Format(time.RFC3339) + "\n")
 	if note != "" {
 		b.WriteString("reason: " + note + "\n")

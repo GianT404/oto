@@ -264,7 +264,7 @@ func absDiff(a, b float64) float64 {
 // để caller có thể chấm điểm trước khi chấp nhận.
 func fetchLRCLibGet(ctx context.Context, reqURL string) (*lrclibTrack, error) {
 	req, _ := http.NewRequestWithContext(ctx, http.MethodGet, reqURL, nil)
-	req.Header.Set("Lrclib-Client", "SOM/1.0 (https://github.com/GianT404/SOM)")
+	req.Header.Set("Lrclib-Client", "oto/1.0 (https://github.com/GianT404/oto)")
 
 	resp, err := lrclibHTTPClient.Do(req)
 	if err != nil {
@@ -313,7 +313,7 @@ func fetchLRCLibSearchWithClient(ctx context.Context, client *http.Client, reqUR
 		if err != nil {
 			return nil, err
 		}
-		req.Header.Set("Lrclib-Client", "SOM/1.0 (https://github.com/GianT404/SOM)")
+		req.Header.Set("Lrclib-Client", "oto/1.0 (https://github.com/GianT404/oto)")
 
 		resp, err := client.Do(req)
 		if err != nil {
@@ -422,7 +422,6 @@ func lrclibTrackToLyricsData(t lrclibTrack) []LyricsData {
 	return result
 }
 
-
 func SearchLRCLib(ctx context.Context, query string, limit int) ([]LRCLibSearchResult, error) {
 	query = strings.TrimSpace(query)
 	if query == "" {
@@ -447,8 +446,8 @@ func SearchLRCLib(ctx context.Context, query string, limit int) ([]LRCLibSearchR
 func rankLRCLibSearchResults(query string, tracks []lrclibTrack, limit int) []LRCLibSearchResult {
 	type rankedResult struct {
 		result LRCLibSearchResult
-		score float64
-		index int
+		score  float64
+		index  int
 	}
 	ranked := make([]rankedResult, 0, len(tracks))
 	seen := make(map[string]struct{}, len(tracks))

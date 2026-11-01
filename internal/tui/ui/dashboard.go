@@ -6,7 +6,7 @@ import (
 	"os"
 	"strings"
 
-	"som/internal/domain"
+	"oto/internal/domain"
 
 	"charm.land/lipgloss/v2"
 )
