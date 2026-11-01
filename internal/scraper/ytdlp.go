@@ -175,27 +175,45 @@ func UpdateYtdlp(binPath string) error {
 	return nil
 }
 
-var ytdlpCacheDir = resolveYtdlpCacheDir()
+var (
+	ytdlpCacheOnce sync.Once
+	ytdlpCacheDir  string
+)
 
 func resolveYtdlpCacheDir() string {
-	dir := os.Getenv("YTDLP_CACHE_DIR")
+	dir := strings.TrimSpace(os.Getenv("YTDLP_CACHE_DIR"))
+
 	if dir == "" {
-		dir = "/var/cache/oto/yt-dlp"
+		cacheRoot, err := os.UserCacheDir()
+		if err != nil {
+			log.Printf("ytdlp: cannot resolve user cache directory: %v", err)
+			return ""
+		}
+
+		dir = filepath.Join(cacheRoot, "oto", "yt-dlp")
 	}
+
 	if err := os.MkdirAll(dir, 0o755); err != nil {
-		log.Printf("ytdlp: khong tao duoc cache dir %s: %v — dung cache mac dinh cua yt-dlp (khong persistent)", dir, err)
+		log.Printf(
+			"ytdlp: cannot create cache directory %s: %v",
+			dir,
+			err,
+		)
 		return ""
 	}
+
 	return dir
 }
 
-// cacheDirArgs trả flag --cache-dir nếu thư mục cache khả dụng. Nếu không
-// tạo được (permission, disk...), trả rỗng thay vì chặn cả app — yt-dlp
-// tự lo cache mặc định, chỉ mất tính persistent chứ không mất chức năng.
 func cacheDirArgs() []string {
+	ytdlpCacheOnce.Do(func() {
+		ytdlpCacheDir = resolveYtdlpCacheDir()
+	})
+
 	if ytdlpCacheDir == "" {
 		return nil
 	}
+
 	return []string{"--cache-dir", ytdlpCacheDir}
 }
 
