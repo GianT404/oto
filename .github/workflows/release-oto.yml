@@ -40,7 +40,7 @@ jobs:
 
       - name: Sign release binaries (minisign)
         env:
-          oto_MINISIGN_KEY: ${{ secrets.oto_MINISIGN_KEY }}
+          oto_MINISIGN_KEY: ${{ secrets.SOM_MINISIGN_KEY }}
         run: |
           go run ./cmd/oto-sign sign oto-linux-amd64 oto-windows-amd64.exe
 
