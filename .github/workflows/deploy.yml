@@ -65,23 +65,20 @@ jobs:
   deploy:
     needs: build-and-push
     runs-on: ubuntu-latest
+
     steps:
       - name: Deploy to GCP
         uses: appleboy/ssh-action@v1.0.3
-        env:
-          OTO_API_KEY: ${{ secrets.SOM_API_KEY }}
-          BANNED_DEVICES: ${{ secrets.BANNED_DEVICES }}
         with:
           host: ${{ secrets.GCP_VM_IP }}
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          envs: OTO_API_KEY,BANNED_DEVICES
           script: |
             set -Eeuo pipefail
 
             APP_DIR="$HOME/oto"
 
-            # Migrate old directory if it still exists
+            # Migrate old directory if needed
             if [[ ! -d "$APP_DIR/.git" ]]; then
               if [[ -d "$HOME/SOM/.git" && ! -e "$APP_DIR" ]]; then
                 mv "$HOME/SOM" "$APP_DIR"
@@ -98,17 +95,26 @@ jobs:
             # Update repository remote
             git remote set-url origin https://github.com/GianT404/oto.git
 
+            # Pull latest source code
             git fetch origin main
             git reset --hard origin/main
 
-            # Write environment variables
-            printf 'SOM_API_KEY=%s\n' "$SOM_API_KEY" > .env
-            printf 'BANNED_DEVICES=%s\n' "$BANNED_DEVICES" >> .env
+            # Keep server-managed .env unchanged
+            if [[ ! -s .env ]]; then
+              echo "Missing or empty .env file"
+              exit 1
+            fi
 
-            # Validate compose configuration before deployment
+            # Validate required backend API key without displaying its value
+            if ! grep -Eq '^oto_API_KEY=.+$' .env; then
+              echo "Missing or empty oto_API_KEY in .env"
+              exit 1
+            fi
+
+            # Validate Docker Compose configuration
             docker compose config -q
 
-            # Pull and recreate changed services
+            # Pull latest images and deploy
             docker compose pull
             docker compose up -d --remove-orphans
 
