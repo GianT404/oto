@@ -1,43 +1,62 @@
 services:
   oto-backend-prod:
-    image: gian404/oto-backend:latest
-    container_name: oto-backend-prod
-    restart: always
+    image: ${OTO_IMAGE_REPOSITORY:-gian404/oto-backend}:${OTO_IMAGE_TAG:-latest}
+    restart: unless-stopped
+    init: true
     env_file:
       - .env
     environment:
-      - TRUSTED_PROXIES=172.16.0.0/12
-      - YTDLP_CACHE_DIR=/var/cache/oto/yt-dlp
+      TRUSTED_PROXIES: "172.16.0.0/12"
+      YTDLP_CACHE_DIR: /var/cache/oto/yt-dlp
     volumes:
       - ytdlp_cache:/var/cache/oto/yt-dlp
     mem_limit: 512m
     cpus: "1.8"
     pids_limit: 128
+    stop_grace_period: 30s
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:8080/health"]
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080/health"]
       interval: 30s
       timeout: 5s
       retries: 3
       start_period: 15s
-    # logging:
-    #   driver: gcplogs
-    #   options:
-    #     gcp-project: "beoto-502914"
-    #     gcp-log-cmd: "true"
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   caddy:
     image: caddy:2-alpine
-    container_name: caddy-proxy
-    restart: always
+    restart: unless-stopped
+    init: true
+    depends_on:
+      oto-backend-prod:
+        condition: service_healthy
     ports:
       - "80:80"
       - "443:443"
+      - "443:443/udp"
     volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
       - caddy_config:/config
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
 
 volumes:
   caddy_data:
+    name: oto_caddy_data
   caddy_config:
+    name: oto_caddy_config
   ytdlp_cache:
+    name: oto_ytdlp_cache
