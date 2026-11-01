@@ -14,7 +14,7 @@ info:
     name: Personal / Educational Use Only
 
 servers:
-  - url: https://otoz.duckdns.org
+  - url: https://somz.duckdns.org
     description: Production server
 
 tags:

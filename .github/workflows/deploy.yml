@@ -66,21 +66,50 @@ jobs:
     needs: build-and-push
     runs-on: ubuntu-latest
     steps:
-      - name: SSH vào GCP VM và Kéo Image về chạy
+      - name: Deploy to GCP
         uses: appleboy/ssh-action@v1.0.3
+        env:
+          OTO_API_KEY: ${{ secrets.SOM_API_KEY }}
+          BANNED_DEVICES: ${{ secrets.BANNED_DEVICES }}
         with:
           host: ${{ secrets.GCP_VM_IP }}
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
+          envs: OTO_API_KEY,BANNED_DEVICES
           script: |
-            cd ~/oto
-            git fetch --all
+            set -Eeuo pipefail
+
+            APP_DIR="$HOME/oto"
+
+            # Migrate old directory if it still exists
+            if [[ ! -d "$APP_DIR/.git" ]]; then
+              if [[ -d "$HOME/SOM/.git" && ! -e "$APP_DIR" ]]; then
+                mv "$HOME/SOM" "$APP_DIR"
+              elif [[ ! -e "$APP_DIR" ]]; then
+                git clone https://github.com/GianT404/oto.git "$APP_DIR"
+              else
+                echo "Invalid application directory: $APP_DIR"
+                exit 1
+              fi
+            fi
+
+            cd "$APP_DIR"
+
+            # Update repository remote
+            git remote set-url origin https://github.com/GianT404/oto.git
+
+            git fetch origin main
             git reset --hard origin/main
-            
-            # Ghi file .env an toàn hơn
-            echo "oto_API_KEY=${{ secrets.oto_API_KEY }}" > .env
-            echo "BANNED_DEVICES=${{ secrets.BANNED_DEVICES }}" >> .env
-            
-            docker compose down --remove-orphans
+
+            # Write environment variables
+            printf 'SOM_API_KEY=%s\n' "$SOM_API_KEY" > .env
+            printf 'BANNED_DEVICES=%s\n' "$BANNED_DEVICES" >> .env
+
+            # Validate compose configuration before deployment
+            docker compose config -q
+
+            # Pull and recreate changed services
             docker compose pull
-            docker compose up -d
+            docker compose up -d --remove-orphans
+
+            echo "OTO deployment completed."

@@ -1,4 +1,4 @@
-otoz.duckdns.org {
+somz.duckdns.org {
     # CORS được xử lý hoàn toàn ở Go backend (middleware) để tránh trùng/thiếu header.
     reverse_proxy oto-backend-prod:8080
 }

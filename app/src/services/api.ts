@@ -1,7 +1,7 @@
 import * as SecureStore from 'expo-secure-store';
 import * as Crypto from 'expo-crypto';
 
-const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://otoz.duckdns.org';
+const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://somz.duckdns.org';
 const DEVICE_ID_KEY = 'oto_device_id';
 const TOKEN_KEY = 'oto_device_token';
 
