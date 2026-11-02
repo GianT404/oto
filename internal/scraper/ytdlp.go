@@ -19,6 +19,7 @@ import (
 
 	"github.com/kkdai/youtube/v2"
 
+	"oto/internal/audio"
 	"oto/internal/cache"
 )
 
@@ -474,7 +475,7 @@ func (y *YtdlpScraper) DownloadAudio(ctx context.Context, videoID string) (strin
 			removeYtAudioPartials(videoID)
 			return "", fmt.Errorf("yt-dlp download: expected WebM Opus output: %w", err)
 		}
-		if err := remuxWebMOpus(partialWebM, partialFile); err != nil {
+		if err := audio.RemuxWebMOpus(partialWebM, partialFile); err != nil {
 			removeYtAudioPartials(videoID)
 			return "", fmt.Errorf("yt-dlp download: remux WebM Opus: %w", err)
 		}

@@ -254,11 +254,13 @@ func (p *Player) playFromLocked(filePath string, startSec float64, headers map[s
 				reader, err = openAACAudio(filePath, startSec)
 			case ".m4a", ".mp4":
 				reader, err = openM4AAudio(filePath, startSec)
+			case ".webm":
+				reader, err = openWebMOpus(filePath, startSec)
 			}
 		}
 		if err != nil {
 			switch strings.ToLower(filepath.Ext(filePath)) {
-			case ".aac", ".m4a", ".mp4":
+			case ".aac", ".m4a", ".mp4", ".webm":
 				// AAC profiles and MP4 tracks outside the native decoder scope
 				// are still handled by the fallback while it remains available.
 				err = nil
@@ -563,6 +565,8 @@ func (p *Player) PreDecodeNext(filePath string, headers map[string]string) {
 				pipe, _ = openAACAudio(filePath, 0)
 			case ".m4a", ".mp4":
 				pipe, _ = openM4AAudio(filePath, 0)
+			case ".webm":
+				pipe, _ = openWebMOpus(filePath, 0)
 			}
 		}
 		if pipe != nil {

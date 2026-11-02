@@ -1,33 +1,29 @@
-package scraper
+package audio
 
 import (
+	"encoding/binary"
 	"errors"
 	"fmt"
 	"io"
 	"os"
+	"sync"
 
 	"github.com/5rahim/gomkv"
 	"github.com/thesyncim/gopus/container/ogg"
 )
 
-// remuxWebMOpus copies Opus packets from a WebM audio track into an Ogg Opus
+// RemuxWebMOpus copies Opus packets from a WebM audio track into an Ogg Opus
 // stream without decoding or re-encoding them.
-func remuxWebMOpus(srcPath, dstPath string) (err error) {
+func RemuxWebMOpus(srcPath, dstPath string) (err error) {
 	src, err := os.Open(srcPath)
 	if err != nil {
 		return err
 	}
 	defer src.Close()
 
-	track := &webmOpusTrack{}
-	if err := gomkv.ParseSections(src, track, gomkv.TracksElement); err != nil {
-		return fmt.Errorf("parse WebM tracks: %w", err)
-	}
-	if track.number == 0 || track.codec != "A_OPUS" {
-		return errors.New("WebM does not contain an Opus audio track")
-	}
-	if track.channels != 1 && track.channels != 2 {
-		return fmt.Errorf("unsupported WebM Opus channel count: %d", track.channels)
+	track, err := discoverWebMOpusTrack(src)
+	if err != nil {
+		return err
 	}
 
 	if _, err := src.Seek(0, io.SeekStart); err != nil {
@@ -43,7 +39,7 @@ func remuxWebMOpus(srcPath, dstPath string) (err error) {
 		}
 	}()
 
-	writer, err := ogg.NewWriter(dst, 48000, uint8(track.channels))
+	writer, err := newWebMOggWriter(dst, track)
 	if err != nil {
 		return fmt.Errorf("create Ogg Opus writer: %w", err)
 	}
@@ -60,21 +56,116 @@ func remuxWebMOpus(srcPath, dstPath string) (err error) {
 	return nil
 }
 
+// OpenWebMOpus returns an Ogg Opus stream backed by a WebM demux goroutine.
+// The input is decoded packet-by-packet without first materializing a temp file.
+func OpenWebMOpus(path string) (io.ReadCloser, error) {
+	src, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	track, err := discoverWebMOpusTrack(src)
+	if err != nil {
+		src.Close()
+		return nil, err
+	}
+	if _, err := src.Seek(0, io.SeekStart); err != nil {
+		src.Close()
+		return nil, err
+	}
+	reader, writer := io.Pipe()
+	stream := &webmOpusPipe{PipeReader: reader, src: src}
+	go func() {
+		oggWriter, err := newWebMOggWriter(writer, track)
+		if err != nil {
+			_ = src.Close()
+			_ = writer.CloseWithError(err)
+			return
+		}
+		blocks := &webmOpusBlocks{track: track.number, writer: oggWriter}
+		parseErr := gomkv.ParseSections(src, blocks, gomkv.ClusterElement)
+		if parseErr == nil && blocks.packets == 0 {
+			parseErr = errors.New("WebM Opus track contains no audio packets")
+		}
+		if parseErr == nil {
+			parseErr = oggWriter.Close()
+		}
+		_ = src.Close()
+		if parseErr != nil {
+			_ = writer.CloseWithError(fmt.Errorf("stream WebM Opus: %w", parseErr))
+		} else {
+			_ = writer.Close()
+		}
+	}()
+	return stream, nil
+}
+
+func newWebMOggWriter(w io.Writer, track *webmOpusTrack) (*ogg.Writer, error) {
+	return ogg.NewWriterWithConfig(w, ogg.WriterConfig{
+		SampleRate:    48000,
+		Channels:      uint8(track.channels),
+		PreSkip:       track.preSkip,
+		OutputGain:    track.outputGain,
+		MappingFamily: 0,
+	})
+}
+
+type webmOpusPipe struct {
+	*io.PipeReader
+	src  *os.File
+	once sync.Once
+}
+
+func (r *webmOpusPipe) Close() error {
+	var err error
+	r.once.Do(func() {
+		err = r.PipeReader.Close()
+		_ = r.src.Close()
+	})
+	return err
+}
+
+func discoverWebMOpusTrack(src io.ReadSeeker) (*webmOpusTrack, error) {
+	track := &webmOpusTrack{}
+	if err := gomkv.ParseSections(src, track, gomkv.TracksElement); err != nil {
+		return nil, fmt.Errorf("parse WebM tracks: %w", err)
+	}
+	if track.number == 0 || track.codec != "A_OPUS" {
+		return nil, errors.New("WebM does not contain an Opus audio track")
+	}
+	if track.channels != 1 && track.channels != 2 {
+		return nil, fmt.Errorf("unsupported WebM Opus channel count: %d", track.channels)
+	}
+	if len(track.codecPrivate) < 19 || string(track.codecPrivate[:8]) != "OpusHead" {
+		return nil, errors.New("WebM Opus track is missing a valid OpusHead")
+	}
+	if track.codecPrivate[18] != 0 {
+		return nil, errors.New("unsupported WebM Opus channel mapping")
+	}
+	track.preSkip = binary.LittleEndian.Uint16(track.codecPrivate[10:12])
+	track.outputGain = int16(binary.LittleEndian.Uint16(track.codecPrivate[16:18]))
+	return track, nil
+}
+
 type webmOpusTrack struct {
 	gomkv.DefaultHandler
-	inEntry     bool
-	entryNumber uint64
-	entryCodec  string
-	entryChans  int
-	number      uint64
-	codec       string
-	channels    int
+	inEntry      bool
+	entryNumber  uint64
+	entryCodec   string
+	entryChans   int
+	entryPrivate []byte
+	number       uint64
+	codec        string
+	channels     int
+	codecPrivate []byte
+	preSkip      uint16
+	outputGain   int16
 }
 
 func (h *webmOpusTrack) HandleMasterBegin(id gomkv.ElementID, info gomkv.ElementInfo) (bool, error) {
 	if id == gomkv.TrackEntryElement {
 		h.inEntry = true
 		h.entryNumber, h.entryCodec, h.entryChans = 0, "", 0
+		h.entryPrivate = nil
 	}
 	return true, nil
 }
@@ -82,12 +173,19 @@ func (h *webmOpusTrack) HandleMasterBegin(id gomkv.ElementID, info gomkv.Element
 func (h *webmOpusTrack) HandleMasterEnd(id gomkv.ElementID, info gomkv.ElementInfo) error {
 	if id == gomkv.TrackEntryElement && h.inEntry {
 		if h.entryCodec == "A_OPUS" && h.entryNumber != 0 {
-			h.number, h.codec, h.channels = h.entryNumber, h.entryCodec, h.entryChans
+			h.number, h.codec, h.channels, h.codecPrivate = h.entryNumber, h.entryCodec, h.entryChans, h.entryPrivate
 			if h.channels == 0 {
 				h.channels = 2
 			}
 		}
 		h.inEntry = false
+	}
+	return nil
+}
+
+func (h *webmOpusTrack) HandleBinary(id gomkv.ElementID, value []byte, info gomkv.ElementInfo) error {
+	if h.inEntry && id == gomkv.CodecPrivateElement {
+		h.entryPrivate = append(h.entryPrivate[:0], value...)
 	}
 	return nil
 }
