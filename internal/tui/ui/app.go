@@ -74,6 +74,8 @@ type App struct {
 	hideHint            bool
 	hideLogo            bool
 	mouseEnabled        bool
+	scrubbing           bool
+	scrubTarget         time.Duration
 	skipSilence         bool
 	version             string
 
@@ -397,6 +399,20 @@ func (a *App) updateSystem(msg tea.Msg) ([]tea.Cmd, bool, bool) {
 	case tea.MouseClickMsg:
 		if a.mouseEnabled {
 			if c := a.handleMouseClick(msg); c != nil {
+				cmds = append(cmds, c)
+			}
+		}
+		return cmds, true, false
+
+	case tea.MouseMotionMsg:
+		if a.mouseEnabled && a.scrubbing && msg.Button == tea.MouseLeft {
+			a.updateProgressScrub(msg.X)
+		}
+		return cmds, true, false
+
+	case tea.MouseReleaseMsg:
+		if a.scrubbing && msg.Button == tea.MouseLeft {
+			if c := a.finishProgressScrub(); c != nil {
 				cmds = append(cmds, c)
 			}
 		}

@@ -2,6 +2,7 @@ package ui
 
 import (
 	"testing"
+	"time"
 
 	tea "charm.land/bubbletea/v2"
 
@@ -129,5 +130,29 @@ func TestProgressBarSeekGeometry(t *testing.T) {
 	a.playback.NowPlay = &domain.Track{Duration: 200}
 	if a.seekFromProgressClick(tea.MouseClickMsg{X: 30, Y: base + 1, Button: tea.MouseLeft}) {
 		t.Fatal("should not seek without a player")
+	}
+}
+
+func TestProgressTargetAtXUsesBothSliderEndpoints(t *testing.T) {
+	a := mouseApp(t)
+	a.playback.NowPlay = &domain.Track{Duration: 200}
+
+	if got := a.progressTargetAtX(2); got != 0 {
+		t.Fatalf("left endpoint should map to 0, got %s", got)
+	}
+	if got := a.progressTargetAtX(a.width - 3); got != 200*time.Second {
+		t.Fatalf("right endpoint should map to 200s, got %s", got)
+	}
+}
+
+func TestProgressTargetAtXClampsOutsideSlider(t *testing.T) {
+	a := mouseApp(t)
+	a.playback.NowPlay = &domain.Track{Duration: 100}
+
+	if got := a.progressTargetAtX(-100); got != 0 {
+		t.Fatalf("left out-of-range coordinate should clamp to 0, got %s", got)
+	}
+	if got := a.progressTargetAtX(1000); got != 100*time.Second {
+		t.Fatalf("right out-of-range coordinate should clamp to duration, got %s", got)
 	}
 }

@@ -3,6 +3,7 @@ package player
 import (
 	"sync"
 	"testing"
+	"time"
 )
 
 func newTestPlayer() *Player {
@@ -89,5 +90,38 @@ func TestPlayer_PlayWithHeadersIfGenerationRejectsStaleRequest(t *testing.T) {
 	}
 	if p.Generation() != 4 {
 		t.Fatalf("generation=%d, want 4", p.Generation())
+	}
+}
+
+func TestPlayer_PositionUsesPendingSeekTarget(t *testing.T) {
+	p := newTestPlayer()
+	p.state = Playing
+	p.startTime = time.Now().Add(-30 * time.Second)
+	p.seekPending = true
+	p.pendingPosition = 75 * time.Second
+
+	if got := p.Position(); got != 75*time.Second {
+		t.Fatalf("Position() = %s, want pending seek target 1m15s", got)
+	}
+}
+
+func TestPlayer_StopClearsPendingSeek(t *testing.T) {
+	p := newTestPlayer()
+	p.state = Playing
+	p.currentPath = "track.opus"
+	p.seekPending = true
+	p.pendingPosition = 42 * time.Second
+	before := p.seekGeneration
+
+	p.Stop()
+
+	if p.seekPending {
+		t.Fatal("Stop should clear pending seek state")
+	}
+	if p.pendingPosition != 0 {
+		t.Fatalf("pending position = %s, want 0", p.pendingPosition)
+	}
+	if p.seekGeneration <= before {
+		t.Fatalf("seek generation = %d, want greater than %d", p.seekGeneration, before)
 	}
 }

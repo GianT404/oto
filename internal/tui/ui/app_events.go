@@ -164,6 +164,8 @@ func (a *App) handleAudioEvents(msg tea.Msg) tea.Cmd {
 		cmds = append(cmds, func() tea.Msg { return PlayNextMsg{} })
 
 	case TrackChangedMsg:
+		a.scrubbing = false
+		a.scrubTarget = 0
 		if a.playback != nil && msg.Gen < a.playback.PlayerGen {
 			break
 		}

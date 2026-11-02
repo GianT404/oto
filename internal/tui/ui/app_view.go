@@ -459,7 +459,11 @@ func (a *App) renderProgressBar(w int) string {
 	totalSec := 0
 	title := ""
 	if a.playback.NowPlay != nil {
-		elapsedSec = int(a.right.elapsed.Seconds())
+		if a.scrubbing {
+			elapsedSec = int(a.scrubTarget.Seconds())
+		} else {
+			elapsedSec = int(a.right.elapsed.Seconds())
+		}
 		totalSec = a.playback.NowPlay.Duration
 		title = a.playback.NowPlay.Title
 	}

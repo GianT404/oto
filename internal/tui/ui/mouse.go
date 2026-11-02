@@ -442,8 +442,27 @@ func (a *App) progressBarTop() int {
 	return a.uiLayout().ProgressBarTop()
 }
 
+func (a *App) progressTargetAtX(x int) time.Duration {
+	if a.playback == nil || a.playback.NowPlay == nil || a.playback.NowPlay.Duration <= 0 {
+		return 0
+	}
+	innerW := a.width - 4
+	if innerW <= 1 {
+		return 0
+	}
+	left := 2
+	right := left + innerW - 1
+	if x < left {
+		x = left
+	} else if x > right {
+		x = right
+	}
+	fraction := float64(x-left) / float64(right-left)
+	return time.Duration(fraction * float64(a.playback.NowPlay.Duration) * float64(time.Second))
+}
+
 func (a *App) seekFromProgressClick(m tea.MouseClickMsg) bool {
-	if a.player == nil || a.playback.NowPlay == nil || a.playback.NowPlay.Duration <= 0 {
+	if a.player == nil || a.playback == nil || a.playback.NowPlay == nil || a.playback.NowPlay.Duration <= 0 {
 		return false
 	}
 	if m.Button != tea.MouseLeft {
@@ -454,19 +473,34 @@ func (a *App) seekFromProgressClick(m tea.MouseClickMsg) bool {
 		return false
 	}
 	innerW := a.width - 4
-	if m.X < 2 || m.X > 2+innerW-1 {
+	if innerW <= 0 || m.X < 2 || m.X > 2+innerW-1 {
 		return false
 	}
-	frac := float64(m.X-1) / float64(innerW)
-	if frac < 0 {
-		frac = 0
-	}
-	if frac > 1 {
-		frac = 1
-	}
-	target := frac * float64(a.playback.NowPlay.Duration)
-	a.player.SeekBy(target - a.player.Position().Seconds())
+
+	a.scrubbing = true
+	a.scrubTarget = a.progressTargetAtX(m.X)
 	return true
+}
+
+func (a *App) updateProgressScrub(x int) {
+	if a.scrubbing {
+		a.scrubTarget = a.progressTargetAtX(x)
+	}
+}
+
+func (a *App) finishProgressScrub() tea.Cmd {
+	if !a.scrubbing {
+		return nil
+	}
+	target := a.scrubTarget
+	a.scrubbing = false
+	if a.player == nil || a.playback == nil || a.playback.NowPlay == nil {
+		return nil
+	}
+
+	a.right.elapsed = target
+	a.player.SeekTo(target.Seconds())
+	return func() tea.Msg { return PlaybackTickMsg{} }
 }
 
 func (a *App) handleMouseWheel(up bool) {
@@ -527,9 +561,9 @@ func (a *App) handleMouseClick(m tea.MouseClickMsg) tea.Cmd {
 		return cmd
 	}
 
-	// Click lên thanh progress → tua.
+	// Pressing the progress bar starts a scrub; release performs the seek.
 	if a.seekFromProgressClick(m) {
-		return func() tea.Msg { return PlaybackTickMsg{} }
+		return nil
 	}
 	contentTop := a.otoRowHeight() + 1
 

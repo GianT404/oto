@@ -70,8 +70,12 @@ type Player struct {
 	lastErr      error
 	stopped      bool
 	volume       float64
-	generation   uint64
-	audioFilter  string
+	generation      uint64
+	seekGeneration  uint64
+	seekPending     bool
+	pendingPosition time.Duration
+	seekErr         error
+	audioFilter     string
 	speed        float64
 	skipSilence  bool
 
@@ -135,10 +139,11 @@ func (p *Player) State() State {
 	return p.state
 }
 
-// Position trả về vị trí phát hiện tại (tính cả trạng thái pause).
-func (p *Player) Position() time.Duration {
-	p.mu.Lock()
-	defer p.mu.Unlock()
+// positionLocked returns the current playback position. The caller must hold p.mu.
+func (p *Player) positionLocked() time.Duration {
+	if p.seekPending {
+		return p.pendingPosition
+	}
 	speed := p.speed
 	if speed <= 0 {
 		speed = 1.0
@@ -151,6 +156,13 @@ func (p *Player) Position() time.Duration {
 	default:
 		return 0
 	}
+}
+
+// Position trả về vị trí phát hiện tại (tính cả trạng thái pause và seek đang chờ).
+func (p *Player) Position() time.Duration {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	return p.positionLocked()
 }
 
 func (p *Player) Play(filePath string) error {
@@ -196,36 +208,20 @@ func (p *Player) playFromLocked(filePath string, startSec float64, headers map[s
 	p.startTime = time.Now().Add(-time.Duration((startSec / speed) * float64(time.Second)))
 	p.pauseOffset = 0
 	p.lastErr = nil
+	p.seekErr = nil
+	p.seekPending = false
+	p.pendingPosition = 0
 	p.stopped = false
 	p.generation++
-	mode, presetSpeed, supported := nativePresetFor(p.audioFilter)
-	if !supported {
-		err := fmt.Errorf("unsupported audio filter")
-		p.lastErr = err
-		p.currentPath = ""
-		return err
-	}
-	var reader io.ReadCloser
-	var err error
-	if strings.HasPrefix(filePath, "http://") || strings.HasPrefix(filePath, "https://") {
-		var ok bool
-		reader, ok, err = openNativeURL(filePath, headers, startSec)
-		if err == nil && !ok {
-			err = fmt.Errorf("unsupported audio URL format")
-		}
-	} else {
-		reader, err = openNativeFile(filePath, startSec)
-	}
+	reader, err := openPlaybackReader(filePath, headers, startSec, speed, p.audioFilter, p.skipSilence)
 	if err != nil {
 		p.lastErr = err
 		p.currentPath = ""
+		p.headers = nil
 		return fmt.Errorf("open audio: %w", err)
 	}
-	reader = applyNativePreset(reader, mode)
-	if p.skipSilence {
-		reader = skipSilence(reader)
-	}
-	reader = withPlaybackSpeed(reader, speed*presetSpeed)
+	p.seekPending = false
+	p.seekErr = nil
 	p.directReader = reader
 	p.player = p.otoCtx.NewPlayer(reader)
 	p.player.SetVolume(p.volume)
@@ -284,6 +280,10 @@ func (p *Player) Stop() {
 	p.stopLocked()
 }
 func (p *Player) stopLocked() {
+	p.seekGeneration++
+	p.seekPending = false
+	p.pendingPosition = 0
+	p.seekErr = nil
 	if p.state != Stopped {
 		p.stopped = true
 		if p.player != nil {
@@ -317,9 +317,10 @@ func (p *Player) TogglePause() {
 		speed = 1.0
 	}
 	if p.state == Playing {
+		position := p.positionLocked()
 		p.player.Pause()
 		p.state = Paused
-		p.pauseOffset = time.Duration(float64(time.Since(p.startTime)) * speed)
+		p.pauseOffset = position
 	} else if p.state == Paused {
 		p.player.Play()
 		p.state = Playing
@@ -327,64 +328,170 @@ func (p *Player) TogglePause() {
 	}
 }
 
-// SeekBy hỗ trợ tua tới / tua lùi nhạc
+// SeekBy queues an asynchronous seek relative to the logical playback position.
+// Repeated key events supersede older requests instead of blocking the UI loop.
 func (p *Player) SeekBy(seconds float64) {
 	p.mu.Lock()
-	path := p.currentPath
-	if path == "" || p.state == Stopped {
+	if p.currentPath == "" || p.state == Stopped {
 		p.mu.Unlock()
 		return
 	}
-	speed := p.speed
-	if speed <= 0 {
-		speed = 1.0
-	}
-	var elapsed float64
-	if p.state == Paused {
-		elapsed = p.pauseOffset.Seconds()
-	} else {
-		elapsed = time.Since(p.startTime).Seconds() * speed
-	}
-	newSec := elapsed + seconds
-	if newSec < 0 {
-		newSec = 0
-	}
+	target := p.positionLocked().Seconds() + seconds
 	p.mu.Unlock()
-	_ = p.playFrom(path, newSec, p.currentHeaders())
+	p.SeekTo(target)
 }
 
+// SeekTo prepares a replacement reader in the background. The current audio
+// keeps playing until the new decoder is ready, then the output player is swapped.
 func (p *Player) SeekTo(seconds float64) {
 	p.mu.Lock()
-	path := p.currentPath
-	if path == "" || p.state == Stopped {
+	if p.currentPath == "" || p.state == Stopped || p.otoCtx == nil {
 		p.mu.Unlock()
 		return
 	}
 	if seconds < 0 {
 		seconds = 0
 	}
+	if p.speed <= 0 {
+		p.speed = 1
+	}
+
+	p.seekGeneration++
+	requestID := p.seekGeneration
+	trackGeneration := p.generation
+	path := p.currentPath
+	headers := cloneHeaders(p.headers)
+	speed := p.speed
+	filter := p.audioFilter
+	skip := p.skipSilence
+	target := time.Duration(seconds * float64(time.Second))
+	p.seekPending = true
+	p.pendingPosition = target
+	p.seekErr = nil
 	p.mu.Unlock()
-	_ = p.playFrom(path, seconds, p.currentHeaders())
+
+	go p.completeSeek(requestID, trackGeneration, path, headers, seconds, target, speed, filter, skip)
 }
 
-// currentHeaders giữ headers của lần phát hiện tại để seek lại với đúng header.
+func (p *Player) completeSeek(
+	requestID, trackGeneration uint64,
+	path string,
+	headers map[string]string,
+	seconds float64,
+	target time.Duration,
+	speed float64,
+	filter string,
+	skip bool,
+) {
+	reader, err := openPlaybackReader(path, headers, seconds, speed, filter, skip)
+
+	p.mu.Lock()
+	if requestID != p.seekGeneration || trackGeneration != p.generation || p.state == Stopped {
+		p.mu.Unlock()
+		if reader != nil {
+			_ = reader.Close()
+		}
+		return
+	}
+	if err != nil {
+		p.seekPending = false
+		p.pendingPosition = 0
+		p.seekErr = err
+		p.mu.Unlock()
+		return
+	}
+
+	oldPlayer := p.player
+	oldReader := p.directReader
+	newPlayer := p.otoCtx.NewPlayer(reader)
+	newPlayer.SetVolume(p.volume)
+
+	if oldPlayer != nil {
+		_ = oldPlayer.Close()
+	}
+	if oldReader != nil {
+		_ = oldReader.Close()
+	}
+
+	p.player = newPlayer
+	p.directReader = reader
+	p.pauseOffset = target
+	p.seekPending = false
+	p.pendingPosition = 0
+	p.seekErr = nil
+	p.lastErr = nil
+	gen := p.generation
+	if p.state == Playing {
+		p.startTime = time.Now().Add(-time.Duration(float64(target) / speed))
+		newPlayer.Play()
+	}
+	p.mu.Unlock()
+
+	go p.watchDirectPlayback(reader, gen, newPlayer)
+}
+
+// openPlaybackReader keeps the decoder and DSP pipeline identical for normal
+// playback and seeking. Native seekable formats use their decoder's sample seek.
+func openPlaybackReader(
+	path string,
+	headers map[string]string,
+	startSec float64,
+	speed float64,
+	filter string,
+	skipSilenceEnabled bool,
+) (io.ReadCloser, error) {
+	mode, presetSpeed, supported := nativePresetFor(filter)
+	if !supported {
+		return nil, fmt.Errorf("unsupported audio filter")
+	}
+
+	var reader io.ReadCloser
+	var err error
+	if strings.HasPrefix(path, "http://") || strings.HasPrefix(path, "https://") {
+		var ok bool
+		reader, ok, err = openNativeURL(path, headers, startSec)
+		if err == nil && !ok {
+			err = fmt.Errorf("unsupported audio URL format")
+		}
+	} else {
+		reader, err = openNativeFile(path, startSec)
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	reader = applyNativePreset(reader, mode)
+	if skipSilenceEnabled {
+		reader = skipSilence(reader)
+	}
+	reader = withPlaybackSpeed(reader, speed*presetSpeed)
+	return reader, nil
+}
+
+func cloneHeaders(headers map[string]string) map[string]string {
+	if headers == nil {
+		return nil
+	}
+	copyHeaders := make(map[string]string, len(headers))
+	for key, value := range headers {
+		copyHeaders[key] = value
+	}
+	return copyHeaders
+}
+
+// currentHeaders giữ headers của lần phát hiện hiện tại.
 func (p *Player) currentHeaders() map[string]string {
 	p.mu.Lock()
 	defer p.mu.Unlock()
-	h := p.headers
-	if h == nil {
-		return nil
-	}
-	copyH := make(map[string]string, len(h))
-	for k, v := range h {
-		copyH[k] = v
-	}
-	return copyH
+	return cloneHeaders(p.headers)
 }
 
 func (p *Player) Stderr() string {
 	p.mu.Lock()
 	defer p.mu.Unlock()
+	if p.seekErr != nil {
+		return "seek: " + p.seekErr.Error()
+	}
 	if p.lastErr != nil {
 		return p.lastErr.Error()
 	}
