@@ -252,6 +252,8 @@ func (p *Player) playFromLocked(filePath string, startSec float64, headers map[s
 				reader, err = openBeepAudio(filePath, startSec)
 			case ".aac":
 				reader, err = openAACAudio(filePath, startSec)
+			case ".m4a":
+				reader, err = openM4AAudio(filePath, startSec)
 			}
 		}
 		if err != nil {
@@ -552,6 +554,8 @@ func (p *Player) PreDecodeNext(filePath string, headers map[string]string) {
 				pipe, _ = openBeepAudio(filePath, 0)
 			case ".aac":
 				pipe, _ = openAACAudio(filePath, 0)
+			case ".m4a":
+				pipe, _ = openM4AAudio(filePath, 0)
 			}
 		}
 		if pipe != nil {

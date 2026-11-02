@@ -15,6 +15,7 @@ import (
 	"github.com/gopxl/beep/v2/vorbis"
 	"github.com/gopxl/beep/v2/wav"
 	aacpcm "github.com/tphakala/go-aac/pcm"
+	"github.com/tphakala/go-m4a/aacm4a"
 )
 
 type beepAudioReader struct {
@@ -55,10 +56,46 @@ func decodeAACAudio(f io.ReadCloser, startSec float64) (*beepAudioReader, error)
 		f.Close()
 		return nil, errors.New("unsupported AAC channel count")
 	}
-	stream := beep.Resample(8, beep.SampleRate(info.SampleRate), beep.SampleRate(48000), &aacPCMStreamer{
+	return newAACAudioReader(f, decoder, info.SampleRate, info.Channels, startSec)
+}
+
+func openM4AAudio(path string, startSec float64) (*beepAudioReader, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	decoder, info, err := aacm4a.NewDecoder(f)
+	if err != nil {
+		f.Close()
+		return nil, err
+	}
+	if info.Channels != 1 && info.Channels != 2 {
+		f.Close()
+		return nil, errors.New("unsupported M4A channel count")
+	}
+	if info.Duration < 0 {
+		f.Close()
+		return nil, errors.New("invalid M4A duration")
+	}
+	startSamples := int64(startSec * float64(info.SampleRate))
+	totalSamples := int64(info.Duration.Seconds() * float64(info.SampleRate))
+	if startSamples > totalSamples {
+		startSamples = totalSamples
+	}
+	stride := int64(info.Channels * 2)
+	limited := &aacM4APCMReader{
+		source: decoder,
+		skip:   (info.EncoderDelay + startSamples) * stride,
+		limit:  (totalSamples - startSamples) * stride,
+	}
+	return newAACAudioReader(f, limited, info.SampleRate, info.Channels, 0)
+}
+
+func newAACAudioReader(f io.ReadCloser, decoder io.Reader, sampleRate, channels int, startSec float64) (*beepAudioReader, error) {
+	stream := beep.Resample(8, beep.SampleRate(sampleRate), beep.SampleRate(48000), &aacPCMStreamer{
 		decoder:  decoder,
-		channels: info.Channels,
-		buffer:   make([]byte, 512*info.Channels*2),
+		channels: channels,
+		buffer:   make([]byte, 512*channels*2),
 	})
 	if startSec > 0 {
 		remaining := int(startSec * 48000)
@@ -72,6 +109,34 @@ func decodeAACAudio(f io.ReadCloser, startSec float64) (*beepAudioReader, error)
 		}
 	}
 	return &beepAudioReader{stream: stream, closer: f, frames: make([][2]float64, 512), gain: 1}, nil
+}
+
+type aacM4APCMReader struct {
+	source io.Reader
+	skip   int64
+	limit  int64
+}
+
+func (r *aacM4APCMReader) Read(dst []byte) (int, error) {
+	if r.skip > 0 {
+		n, err := io.CopyN(io.Discard, r.source, r.skip)
+		r.skip -= n
+		if err != nil {
+			return 0, err
+		}
+	}
+	if r.limit <= 0 {
+		return 0, io.EOF
+	}
+	if int64(len(dst)) > r.limit {
+		dst = dst[:int(r.limit)]
+	}
+	n, err := r.source.Read(dst)
+	r.limit -= int64(n)
+	if r.limit <= 0 && err == nil {
+		return n, io.EOF
+	}
+	return n, err
 }
 
 type aacPCMStreamer struct {

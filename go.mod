@@ -20,6 +20,7 @@ require (
 	github.com/spf13/cobra v1.10.2
 	github.com/thesyncim/gopus v0.1.2
 	github.com/tphakala/go-aac v0.6.0
+	github.com/tphakala/go-m4a v0.5.0
 	modernc.org/sqlite v1.57.0
 )
 
