@@ -285,8 +285,15 @@ func (p *Player) playFromLocked(filePath string, startSec float64, headers map[s
 }
 
 func (p *Player) watchDirectPlayback(reader io.ReadCloser, gen uint64, optr *oto.Player) {
-	for optr != nil && optr.IsPlaying() {
+	direct, _ := reader.(*oggOpusReader)
+	for optr != nil {
 		time.Sleep(50 * time.Millisecond)
+		p.mu.Lock()
+		active := p.directReader == reader && p.generation == gen && (p.state == Playing || p.state == Paused)
+		p.mu.Unlock()
+		if !active || (direct != nil && direct.eof.Load() && !optr.IsPlaying()) {
+			break
+		}
 	}
 	p.mu.Lock()
 	defer p.mu.Unlock()

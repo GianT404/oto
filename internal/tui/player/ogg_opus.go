@@ -5,6 +5,7 @@ import (
 	"errors"
 	"io"
 	"os"
+	"sync/atomic"
 	"time"
 
 	"github.com/pion/opus"
@@ -21,6 +22,7 @@ type oggOpusReader struct {
 	pcm       []byte
 	pcmOffset int
 	closed    bool
+	eof       atomic.Bool
 }
 
 func openOggOpus(path string, start time.Duration) (*oggOpusReader, error) {
@@ -64,6 +66,9 @@ func (r *oggOpusReader) Read(dst []byte) (int, error) {
 	for r.pcmOffset >= len(r.pcm) {
 		packet, _, err := r.ogg.ParseNextPacket()
 		if err != nil {
+			if err == io.EOF {
+				r.eof.Store(true)
+			}
 			return 0, err
 		}
 		// Opus packets are at most 120 ms at 48 kHz.
