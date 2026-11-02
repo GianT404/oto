@@ -7,7 +7,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -29,10 +28,9 @@ import (
 // là tốc độ đường truyền thật (không bị CDN throttle), và chơi lại bài cũ
 // thì trả file cached ngay.
 //
-// Khi query ?clean=1, endpoint transcode file cục bộ qua ffmpeg silenceremove
+// Khi query ?clean=1, endpoint re-encodes file cục bộ để bỏ silence
 // Kết quả được cache ở /tmp/dopus-clean-<id>.ogg để lần sau không transcode
-// lại. Transcode từ file cục bộ nên không còn lỗi 403 khi ffmpeg fetch thẳng
-// URL CDN (vấn đề IP-binding/multi-IP trước đây).
+// lại. Audio được tải về trước khi xử lý để không phụ thuộc URL CDN.
 type StreamHandler struct {
 	Scraper scraper.Scraper
 }
@@ -180,8 +178,7 @@ func serveAudioFile(w http.ResponseWriter, r *http.Request, path, filename strin
 	http.ServeContent(w, r, filename, fi.ModTime(), f)
 }
 
-// cleanWorkTimeout chặn trên cho cả pipeline clean (download + transcode) để
-// yt-dlp/ffmpeg treo không chiếm slot download/keyed lock vô hạn.
+// cleanWorkTimeout caps the download and in-process audio work for clean requests.
 const cleanWorkTimeout = 15 * time.Minute
 
 func (h *StreamHandler) proxyClean(w http.ResponseWriter, r *http.Request, videoID, filename string) {
@@ -207,8 +204,7 @@ func (h *StreamHandler) proxyClean(w http.ResponseWriter, r *http.Request, video
 		return
 	}
 
-	// Nguồn transcode là file cục bộ (đã download qua yt-dlp) — ổn định hơn
-	// hẳn việc để ffmpeg tự fetch URL CDN.
+	// Nguồn audio đã được cache cục bộ trước khi decode.
 	srcPath, err := h.Scraper.DownloadAudio(ctx, videoID)
 	if err != nil {
 		log.Printf("stream: clean download error for %s: %v", videoID, err)
@@ -217,20 +213,29 @@ func (h *StreamHandler) proxyClean(w http.ResponseWriter, r *http.Request, video
 	}
 
 	partPath := cleanPath + ".part"
-	cmd := exec.CommandContext(ctx, "ffmpeg",
-		"-hide_banner", "-loglevel", "error",
-		"-y",
-		"-i", srcPath,
-		"-vn",
-		"-c:a", "libopus", "-b:a", "160k",
-		"-f", "ogg",
-		partPath,
-	)
-
-	var stderr strings.Builder
-	cmd.Stderr = &stderr
-	if err := cmd.Run(); err != nil {
-		log.Printf("stream: ffmpeg clean error for %s: %v; stderr: %s", videoID, err, stderr.String())
+	input, err := os.Open(srcPath)
+	if err != nil {
+		log.Printf("stream: clean source open error for %s: %v", videoID, err)
+		writeError(w, http.StatusInternalServerError, "failed to prepare audio")
+		return
+	}
+	output, err := os.Create(partPath)
+	if err != nil {
+		_ = input.Close()
+		writeError(w, http.StatusInternalServerError, "audio processing failed")
+		return
+	}
+	cleanErr := cleanOpus(ctx, input, output)
+	inputErr := input.Close()
+	outputErr := output.Close()
+	if cleanErr == nil {
+		cleanErr = inputErr
+	}
+	if cleanErr == nil {
+		cleanErr = outputErr
+	}
+	if cleanErr != nil {
+		log.Printf("stream: native clean error for %s: %v", videoID, cleanErr)
 		_ = os.Remove(partPath)
 		writeError(w, http.StatusInternalServerError, "audio processing failed")
 		return
