@@ -215,9 +215,9 @@ func (p *Player) playFromLocked(filePath string, startSec float64, headers map[s
 	if !strings.HasPrefix(filePath, "http://") && !strings.HasPrefix(filePath, "https://") {
 		var reader io.ReadCloser
 		var err error
-		// Keep non-default processing on FFmpeg until the native PCM effects are
-		// implemented. The default dynaudnorm replacement is still pending.
-		nativeCompatible := speed == 1 && !p.skipSilence && p.audioFilter == "dynaudnorm=f=250:g=11:p=0.9:m=10"
+		// Keep silence removal and custom presets on FFmpeg until their native
+		// effects are implemented. Native readers handle normalization and speed.
+		nativeCompatible := !p.skipSilence && p.audioFilter == "dynaudnorm=f=250:g=11:p=0.9:m=10"
 		if nativeCompatible {
 			switch strings.ToLower(filepath.Ext(filePath)) {
 			case ".opus":
@@ -230,6 +230,7 @@ func (p *Player) playFromLocked(filePath string, startSec float64, headers map[s
 			return fmt.Errorf("open audio: %w", err)
 		}
 		if reader != nil {
+			reader = withPlaybackSpeed(reader, speed)
 			p.directReader = reader
 			p.player = p.otoCtx.NewPlayer(reader)
 			p.player.SetVolume(p.volume)
@@ -304,6 +305,8 @@ func (p *Player) watchDirectPlayback(reader io.ReadCloser, gen uint64, optr *oto
 		case *oggOpusReader:
 			return direct.eof.Load()
 		case *beepAudioReader:
+			return direct.finished()
+		case *speedPCMReader:
 			return direct.finished()
 		default:
 			return false
