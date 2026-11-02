@@ -215,13 +215,16 @@ func (p *Player) playFromLocked(filePath string, startSec float64, headers map[s
 	if !strings.HasPrefix(filePath, "http://") && !strings.HasPrefix(filePath, "https://") {
 		var reader io.ReadCloser
 		var err error
-		switch strings.ToLower(filepath.Ext(filePath)) {
-		case ".opus":
-			reader, err = openOggOpus(filePath, time.Duration(startSec*float64(time.Second)))
-		case ".mp3", ".wav", ".flac", ".ogg", ".oga":
-			reader, err = openBeepAudio(filePath, startSec)
-		default:
-			break
+		// Keep non-default processing on FFmpeg until the native PCM effects are
+		// implemented. The default dynaudnorm replacement is still pending.
+		nativeCompatible := speed == 1 && !p.skipSilence && p.audioFilter == "dynaudnorm=f=250:g=11:p=0.9:m=10"
+		if nativeCompatible {
+			switch strings.ToLower(filepath.Ext(filePath)) {
+			case ".opus":
+				reader, err = openOggOpus(filePath, time.Duration(startSec*float64(time.Second)))
+			case ".mp3", ".wav", ".flac", ".ogg", ".oga":
+				reader, err = openBeepAudio(filePath, startSec)
+			}
 		}
 		if err != nil {
 			return fmt.Errorf("open audio: %w", err)
