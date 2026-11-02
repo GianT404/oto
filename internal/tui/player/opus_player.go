@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os/exec"
+	"path/filepath"
 	"strings"
 	"sync"
 	"time"
@@ -68,23 +69,24 @@ func (r *gaplessReader) Close() error {
 }
 
 type Player struct {
-	mu          sync.Mutex
-	state       State
-	otoCtx      *oto.Context
-	player      *oto.Player
-	decoder     *exec.Cmd
-	currentPath string
-	headers     map[string]string
-	startTime   time.Time
-	pauseOffset time.Duration
-	lastErr     error
-	stopped     bool
-	stderrBuf   syncBuffer
-	volume      float64
-	generation  uint64
-	audioFilter string
-	speed       float64
-	skipSilence bool
+	mu           sync.Mutex
+	state        State
+	otoCtx       *oto.Context
+	player       *oto.Player
+	decoder      *exec.Cmd
+	directReader io.ReadCloser
+	currentPath  string
+	headers      map[string]string
+	startTime    time.Time
+	pauseOffset  time.Duration
+	lastErr      error
+	stopped      bool
+	stderrBuf    syncBuffer
+	volume       float64
+	generation   uint64
+	audioFilter  string
+	speed        float64
+	skipSilence  bool
 
 	// Gapless playback: pre-decoded next track.
 	nextCmd   *exec.Cmd
@@ -210,6 +212,19 @@ func (p *Player) playFromLocked(filePath string, startSec float64, headers map[s
 	p.lastErr = nil
 	p.stopped = false
 	p.generation++
+	if !strings.HasPrefix(filePath, "http://") && !strings.HasPrefix(filePath, "https://") && strings.EqualFold(filepath.Ext(filePath), ".opus") {
+		reader, err := openOggOpus(filePath, time.Duration(startSec*float64(time.Second)))
+		if err != nil {
+			return fmt.Errorf("open Opus audio: %w", err)
+		}
+		p.directReader = reader
+		p.player = p.otoCtx.NewPlayer(reader)
+		p.player.SetVolume(p.volume)
+		p.player.Play()
+		p.state = Playing
+		go p.watchDirectPlayback(reader, p.generation, p.player)
+		return nil
+	}
 
 	args := p.buildFFmpegArgs(filePath, headers, startSec, speed)
 
@@ -269,6 +284,20 @@ func (p *Player) playFromLocked(filePath string, startSec float64, headers map[s
 	return nil
 }
 
+func (p *Player) watchDirectPlayback(reader io.ReadCloser, gen uint64, optr *oto.Player) {
+	for optr != nil && optr.IsPlaying() {
+		time.Sleep(50 * time.Millisecond)
+	}
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	if p.directReader == reader && p.generation == gen {
+		_ = reader.Close()
+		p.directReader = nil
+		p.state = Stopped
+		p.currentPath = ""
+	}
+}
+
 func (p *Player) Stop() {
 	p.mu.Lock()
 	defer p.mu.Unlock()
@@ -281,6 +310,10 @@ func (p *Player) stopLocked() {
 		p.stopped = true
 		if p.player != nil {
 			_ = p.player.Close()
+		}
+		if p.directReader != nil {
+			_ = p.directReader.Close()
+			p.directReader = nil
 		}
 		if p.decoder != nil && p.decoder.Process != nil {
 			_ = p.decoder.Process.Kill()

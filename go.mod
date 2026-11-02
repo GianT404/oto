@@ -13,6 +13,7 @@ require (
 	github.com/godbus/dbus/v5 v5.2.2
 	github.com/kkdai/youtube/v2 v2.10.6
 	github.com/mattn/go-runewidth v0.0.27
+	github.com/pion/opus v0.1.0
 	github.com/minio/selfupdate v0.6.0
 	github.com/spf13/cobra v1.10.2
 	modernc.org/sqlite v1.57.0
