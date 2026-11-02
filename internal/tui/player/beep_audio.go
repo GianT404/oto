@@ -32,9 +32,14 @@ func openBeepAudio(path string, startSec float64) (*beepAudioReader, error) {
 	if err != nil {
 		return nil, err
 	}
+	return decodeBeepAudio(filepath.Ext(path), f, startSec, true)
+}
+
+func decodeBeepAudio(ext string, f io.ReadCloser, startSec float64, seekable bool) (*beepAudioReader, error) {
 	var stream beep.StreamSeekCloser
 	var format beep.Format
-	switch strings.ToLower(filepath.Ext(path)) {
+	var err error
+	switch strings.ToLower(ext) {
 	case ".mp3":
 		stream, format, err = mp3.Decode(f)
 	case ".flac":
@@ -51,18 +56,30 @@ func openBeepAudio(path string, startSec float64) (*beepAudioReader, error) {
 		return nil, err
 	}
 	var decoded beep.Streamer = stream
-	decoded = beep.Resample(8, format.SampleRate, beep.SampleRate(48000), decoded)
 	if startSec > 0 {
-		position := int(startSec * float64(format.SampleRate))
-		if position > stream.Len() {
-			position = stream.Len()
+		if seekable {
+			position := int(startSec * float64(format.SampleRate))
+			if position > stream.Len() {
+				position = stream.Len()
+			}
+			if err := stream.Seek(position); err != nil {
+				stream.Close()
+				return nil, err
+			}
+		} else {
+			frames := make([][2]float64, 512)
+			remaining := int(startSec * float64(format.SampleRate))
+			for remaining > 0 {
+				count := min(remaining, len(frames))
+				n, ok := stream.Stream(frames[:count])
+				remaining -= n
+				if !ok || n == 0 {
+					break
+				}
+			}
 		}
-		if err := stream.Seek(position); err != nil {
-			stream.Close()
-			return nil, err
-		}
-		decoded = beep.Resample(8, format.SampleRate, beep.SampleRate(48000), stream)
 	}
+	decoded = beep.Resample(8, format.SampleRate, beep.SampleRate(48000), stream)
 	return &beepAudioReader{stream: decoded, closer: stream, frames: make([][2]float64, 512), gain: 1}, nil
 }
 

@@ -14,7 +14,7 @@ import (
 
 // oggOpusReader decodes an Ogg Opus file to the 48 kHz stereo PCM expected by oto.
 type oggOpusReader struct {
-	file      *os.File
+	file      io.ReadCloser
 	ogg       *oggreader.OggReader
 	decoder   opus.Decoder
 	channels  int
@@ -34,6 +34,10 @@ func openOggOpus(path string, start time.Duration) (*oggOpusReader, error) {
 	if err != nil {
 		return nil, err
 	}
+	return openOggOpusReader(f, start)
+}
+
+func openOggOpusReader(f io.ReadCloser, start time.Duration) (*oggOpusReader, error) {
 	ogg, head, err := oggreader.NewWith(f)
 	if err != nil {
 		f.Close()

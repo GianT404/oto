@@ -212,6 +212,18 @@ func (p *Player) playFromLocked(filePath string, startSec float64, headers map[s
 	p.lastErr = nil
 	p.stopped = false
 	p.generation++
+	if (strings.HasPrefix(filePath, "http://") || strings.HasPrefix(filePath, "https://")) && !p.skipSilence && p.audioFilter == "dynaudnorm=f=250:g=11:p=0.9:m=10" {
+		if reader, ok, _ := openNativeURL(filePath, headers, startSec); ok {
+			reader = withPlaybackSpeed(reader, speed)
+			p.directReader = reader
+			p.player = p.otoCtx.NewPlayer(reader)
+			p.player.SetVolume(p.volume)
+			p.player.Play()
+			p.state = Playing
+			go p.watchDirectPlayback(reader, p.generation, p.player)
+			return nil
+		}
+	}
 	if !strings.HasPrefix(filePath, "http://") && !strings.HasPrefix(filePath, "https://") {
 		var reader io.ReadCloser
 		var err error
