@@ -217,7 +217,7 @@ func (p *Player) playFromLocked(filePath string, startSec float64, headers map[s
 		var err error
 		// Keep silence removal and custom presets on FFmpeg until their native
 		// effects are implemented. Native readers handle normalization and speed.
-		nativeCompatible := !p.skipSilence && p.audioFilter == "dynaudnorm=f=250:g=11:p=0.9:m=10"
+		nativeCompatible := p.audioFilter == "dynaudnorm=f=250:g=11:p=0.9:m=10"
 		if nativeCompatible {
 			switch strings.ToLower(filepath.Ext(filePath)) {
 			case ".opus":
@@ -230,6 +230,9 @@ func (p *Player) playFromLocked(filePath string, startSec float64, headers map[s
 			return fmt.Errorf("open audio: %w", err)
 		}
 		if reader != nil {
+			if p.skipSilence {
+				reader = skipSilence(reader)
+			}
 			reader = withPlaybackSpeed(reader, speed)
 			p.directReader = reader
 			p.player = p.otoCtx.NewPlayer(reader)
@@ -307,6 +310,8 @@ func (p *Player) watchDirectPlayback(reader io.ReadCloser, gen uint64, optr *oto
 		case *beepAudioReader:
 			return direct.finished()
 		case *speedPCMReader:
+			return direct.finished()
+		case *silencePCMReader:
 			return direct.finished()
 		default:
 			return false
