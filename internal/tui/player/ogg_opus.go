@@ -24,6 +24,7 @@ type oggOpusReader struct {
 	closed    bool
 	eof       atomic.Bool
 	readErr   atomic.Pointer[opusReadError]
+	gain      float64
 }
 
 type opusReadError struct{ err error }
@@ -48,7 +49,7 @@ func openOggOpus(path string, start time.Duration) (*oggOpusReader, error) {
 		f.Close()
 		return nil, err
 	}
-	r := &oggOpusReader{file: f, ogg: ogg, decoder: dec, channels: channels, preskip: int(head.PreSkip)}
+	r := &oggOpusReader{file: f, ogg: ogg, decoder: dec, channels: channels, preskip: int(head.PreSkip), gain: 1}
 	// The first packet after OpusHead is the OpusTags metadata packet.
 	if _, _, err = ogg.ParseNextPacket(); err != nil {
 		r.Close()
@@ -100,6 +101,7 @@ func (r *oggOpusReader) Read(dst []byte) (int, error) {
 				binary.LittleEndian.PutUint16(pcm[i*4+2:], uint16(sample))
 			}
 		}
+		normalizePCM16(pcm, &r.gain)
 		r.pcm, r.pcmOffset = pcm, 0
 		if len(pcm) == 0 {
 			continue

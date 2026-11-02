@@ -24,6 +24,7 @@ type beepAudioReader struct {
 	offset  int
 	eof     atomic.Bool
 	readErr atomic.Pointer[error]
+	gain    float64
 }
 
 func openBeepAudio(path string, startSec float64) (*beepAudioReader, error) {
@@ -62,7 +63,7 @@ func openBeepAudio(path string, startSec float64) (*beepAudioReader, error) {
 		}
 		decoded = beep.Resample(8, format.SampleRate, beep.SampleRate(48000), stream)
 	}
-	return &beepAudioReader{stream: decoded, closer: stream, frames: make([][2]float64, 512)}, nil
+	return &beepAudioReader{stream: decoded, closer: stream, frames: make([][2]float64, 512), gain: 1}, nil
 }
 
 func (r *beepAudioReader) Read(dst []byte) (int, error) {
@@ -83,6 +84,7 @@ func (r *beepAudioReader) Read(dst []byte) (int, error) {
 			binary.LittleEndian.PutUint16(r.pcm[i*4:], uint16(left))
 			binary.LittleEndian.PutUint16(r.pcm[i*4+2:], uint16(right))
 		}
+		normalizePCM16(r.pcm, &r.gain)
 		r.offset = 0
 	}
 	n := copy(dst, r.pcm[r.offset:])
@@ -93,3 +95,39 @@ func (r *beepAudioReader) Read(dst []byte) (int, error) {
 func (r *beepAudioReader) Close() error { return r.closer.Close() }
 
 func (r *beepAudioReader) finished() bool { return r.eof.Load() }
+
+// normalizePCM16 applies block peak normalization, the native equivalent of the
+// player's default dynaudnorm preset. Samples are interleaved stereo S16LE.
+func normalizePCM16(pcm []byte, currentGain *float64) {
+	var peak int32
+	for i := 0; i+1 < len(pcm); i += 2 {
+		sample := int32(int16(binary.LittleEndian.Uint16(pcm[i:])))
+		if sample < 0 {
+			sample = -sample
+		}
+		if sample > peak {
+			peak = sample
+		}
+	}
+	if peak == 0 || peak < 256 {
+		return
+	}
+	targetGain := float64(29490) / float64(peak) // target peak: 90% of full scale
+	if targetGain > 4 {
+		targetGain = 4
+	}
+	if targetGain < 0.25 {
+		targetGain = 0.25
+	}
+	*currentGain = *currentGain*0.8 + targetGain*0.2
+	for i := 0; i+1 < len(pcm); i += 2 {
+		sample := int32(int16(binary.LittleEndian.Uint16(pcm[i:])))
+		sample = int32(float64(sample) * *currentGain)
+		if sample > 32767 {
+			sample = 32767
+		} else if sample < -32768 {
+			sample = -32768
+		}
+		binary.LittleEndian.PutUint16(pcm[i:], uint16(int16(sample)))
+	}
+}
