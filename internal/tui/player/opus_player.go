@@ -300,6 +300,11 @@ func (p *Player) watchDirectPlayback(reader io.ReadCloser, gen uint64, optr *oto
 	if p.directReader == reader && p.generation == gen {
 		_ = reader.Close()
 		p.directReader = nil
+		if direct != nil {
+			if readErr := direct.readErr.Load(); readErr != nil {
+				p.lastErr = readErr.err
+			}
+		}
 		p.state = Stopped
 		p.currentPath = ""
 	}

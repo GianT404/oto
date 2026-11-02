@@ -23,7 +23,10 @@ type oggOpusReader struct {
 	pcmOffset int
 	closed    bool
 	eof       atomic.Bool
+	readErr   atomic.Pointer[opusReadError]
 }
+
+type opusReadError struct{ err error }
 
 func openOggOpus(path string, start time.Duration) (*oggOpusReader, error) {
 	f, err := os.Open(path)
@@ -66,8 +69,9 @@ func (r *oggOpusReader) Read(dst []byte) (int, error) {
 	for r.pcmOffset >= len(r.pcm) {
 		packet, _, err := r.ogg.ParseNextPacket()
 		if err != nil {
-			if err == io.EOF {
-				r.eof.Store(true)
+			r.eof.Store(true)
+			if err != io.EOF {
+				r.readErr.Store(&opusReadError{err: err})
 			}
 			return 0, err
 		}
@@ -75,6 +79,8 @@ func (r *oggOpusReader) Read(dst []byte) (int, error) {
 		decoded := make([]int16, 5760*r.channels)
 		n, err := r.decoder.DecodeToInt16(packet, decoded)
 		if err != nil {
+			r.eof.Store(true)
+			r.readErr.Store(&opusReadError{err: err})
 			return 0, err
 		}
 		if r.preskip > 0 {
