@@ -123,3 +123,10 @@ func (r *oggOpusReader) Close() error {
 	r.closed = true
 	return r.file.Close()
 }
+
+func (r *oggOpusReader) playbackError() error {
+	if err := r.readErr.Load(); err != nil {
+		return err.err
+	}
+	return nil
+}

@@ -7,14 +7,24 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+
+	"oto/internal/audio"
 )
 
-// openNativeURL recognizes URLs with supported audio containers. Unsupported
-// containers are left to the FFmpeg fallback.
+// openNativeURL recognizes URLs with audio containers supported by Go decoders.
 func openNativeURL(rawURL string, headers map[string]string, startSec float64) (io.ReadCloser, bool, error) {
 	req, err := http.NewRequest(http.MethodGet, rawURL, nil)
 	if err != nil {
 		return nil, false, err
+	}
+	ext := strings.ToLower(filepath.Ext(req.URL.Path))
+	if ext == ".m4a" || ext == ".mp4" {
+		reader, err := openM4AAudioURL(rawURL, headers, startSec)
+		return reader, err == nil, err
+	}
+	if ext == ".aiff" || ext == ".aif" {
+		reader, err := openAIFFAudioURL(rawURL, headers, startSec)
+		return reader, err == nil, err
 	}
 	for key, value := range headers {
 		req.Header.Set(key, value)
@@ -27,7 +37,6 @@ func openNativeURL(rawURL string, headers map[string]string, startSec float64) (
 		resp.Body.Close()
 		return nil, false, nil
 	}
-	ext := strings.ToLower(filepath.Ext(req.URL.Path))
 	if ext == "" {
 		mediaType, _, _ := mime.ParseMediaType(resp.Header.Get("Content-Type"))
 		switch mediaType {
@@ -41,6 +50,12 @@ func openNativeURL(rawURL string, headers map[string]string, startSec float64) (
 			ext = ".wav"
 		case "audio/aac", "audio/aacp":
 			ext = ".aac"
+		case "audio/webm", "video/webm":
+			ext = ".webm"
+		case "audio/mp4", "video/mp4", "application/mp4", "audio/x-m4a":
+			ext = ".m4a"
+		case "audio/aiff", "audio/x-aiff":
+			ext = ".aiff"
 		}
 	}
 	var reader io.ReadCloser
@@ -51,6 +66,18 @@ func openNativeURL(rawURL string, headers map[string]string, startSec float64) (
 		reader, err = decodeBeepAudio(ext, resp.Body, startSec, false)
 	case ".aac":
 		reader, err = decodeAACAudio(resp.Body, startSec)
+	case ".m4a", ".mp4":
+		_ = resp.Body.Close()
+		reader, err = openM4AAudioURL(rawURL, headers, startSec)
+	case ".aiff", ".aif":
+		_ = resp.Body.Close()
+		reader, err = openAIFFAudioURL(rawURL, headers, startSec)
+	case ".webm":
+		var stream io.ReadCloser
+		stream, err = audio.OpenWebMOpusReader(resp.Body)
+		if err == nil {
+			reader, err = openOggOpusReader(stream, time.Duration(startSec*float64(time.Second)))
+		}
 	default:
 		resp.Body.Close()
 		return nil, false, nil

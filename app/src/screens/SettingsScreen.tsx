@@ -265,7 +265,7 @@ const SettingsScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
                         onToggle={(val) => updateSetting('smartSilenceSkip', val)}
                         onPress={() => showTooltip(
                             'Cắt khoảng lặng',
-                            'Bật tính năng này, server sẽ dùng FFmpeg tự quét luồng âm thanh và cắt bỏ mọi chỗ âm lượng dưới -50dB kéo dài quá 1 giây — giúp bỏ đoạn im lặng đầu/cuối bài hoặc khoảng nghỉ giữa bài.\n\nLưu ý: khi bật, quá trình tải bài sẽ chậm hơn vì server phải xử lý lại âm thanh (transcode).'
+                            'Bật tính năng này, server giải mã Opus bằng Go và bỏ các khung âm thanh dưới -50dB kéo dài quá 1 giây — giúp cắt khoảng lặng đầu/cuối bài hoặc khoảng nghỉ giữa bài.'
                         )}
                     />
                 </View>

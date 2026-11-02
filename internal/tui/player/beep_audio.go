@@ -67,6 +67,23 @@ func openM4AAudio(path string, startSec float64) (*beepAudioReader, error) {
 	if err != nil {
 		return nil, err
 	}
+	return decodeM4AAudio(f, startSec)
+}
+
+func openM4AAudioURL(rawURL string, headers map[string]string, startSec float64) (*beepAudioReader, error) {
+	r, err := openHTTPRangeReader(rawURL, headers)
+	if err != nil {
+		return nil, err
+	}
+	return decodeM4AAudio(r, startSec)
+}
+
+type readSeekCloser interface {
+	io.ReadSeeker
+	io.Closer
+}
+
+func decodeM4AAudio(f readSeekCloser, startSec float64) (*beepAudioReader, error) {
 	decoder, info, err := aacm4a.NewDecoder(f)
 	if err != nil {
 		if _, seekErr := f.Seek(0, io.SeekStart); seekErr != nil {
@@ -359,6 +376,13 @@ func (r *beepAudioReader) Read(dst []byte) (int, error) {
 func (r *beepAudioReader) Close() error { return r.closer.Close() }
 
 func (r *beepAudioReader) finished() bool { return r.eof.Load() }
+
+func (r *beepAudioReader) playbackError() error {
+	if err := r.readErr.Load(); err != nil {
+		return *err
+	}
+	return nil
+}
 
 // normalizePCM16 applies block peak normalization, the native equivalent of the
 // player's default dynaudnorm preset. Samples are interleaved stereo S16LE.

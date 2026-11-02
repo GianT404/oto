@@ -9,31 +9,13 @@ warn()  { printf '\033[1;33m!!\033[0m %s\n' "$1"; }
 error() { printf '\033[1;31mERROR:\033[0m %s\n' "$1" >&2; exit 1; }
 
 install_deps() {
-	# 1. Fetch yt-dlp
+	# Fetch yt-dlp
 	if ! command -v yt-dlp >/dev/null 2>&1; then
 		info "Downloading yt-dlp..."
 		sudo curl -L "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp" -o /usr/local/bin/yt-dlp
 		sudo chmod a+rx /usr/local/bin/yt-dlp
 	else
 		warn "yt-dlp already installed — skipping self-update ('yt-dlp -U' often hits GitHub rate limits; update manually with: yt-dlp -U)"
-	fi
-
-	# 2. Fetch FFmpeg static build
-	if ! command -v ffmpeg >/dev/null 2>&1; then
-		info "Downloading FFmpeg static build..."
-		if [ "$(uname -s)" = "Linux" ]; then
-			curl -L "https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz" -o /tmp/ffmpeg.tar.xz
-			tar -xf /tmp/ffmpeg.tar.xz -C /tmp
-			sudo mv /tmp/ffmpeg-*-static/ffmpeg /tmp/ffmpeg-*-static/ffprobe /usr/local/bin/
-			rm -rf /tmp/ffmpeg*
-		elif [ "$(uname -s)" = "Darwin" ]; then
-			curl -L "https://evermeet.cx/ffmpeg/ffmpeg-115312-g6c039750d7.zip" -o /tmp/ffmpeg.zip
-			unzip -q /tmp/ffmpeg.zip -d /tmp/
-			sudo mv /tmp/ffmpeg /usr/local/bin/
-			rm /tmp/ffmpeg.zip
-		fi
-	else
-		info "FFmpeg already installed."
 	fi
 }
 

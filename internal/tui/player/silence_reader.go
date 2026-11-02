@@ -12,6 +12,7 @@ type silencePCMReader struct {
 	silenceFrames int
 	pending       []byte
 	eof           atomic.Bool
+	err           atomic.Pointer[error]
 }
 
 func skipSilence(source io.ReadCloser) io.ReadCloser {
@@ -41,6 +42,9 @@ func (r *silencePCMReader) Read(dst []byte) (int, error) {
 		}
 		if err != nil {
 			r.eof.Store(true)
+			if err != io.EOF {
+				storePlaybackError(&r.err, err)
+			}
 			if len(r.pending) == 0 {
 				return 0, err
 			}
@@ -53,6 +57,13 @@ func (r *silencePCMReader) Read(dst []byte) (int, error) {
 
 func (r *silencePCMReader) Close() error   { return r.source.Close() }
 func (r *silencePCMReader) finished() bool { return r.eof.Load() }
+
+func (r *silencePCMReader) playbackError() error {
+	if err := r.err.Load(); err != nil {
+		return *err
+	}
+	return playbackErrorFrom(r.source)
+}
 
 func abs32(v int32) int32 {
 	if v < 0 {

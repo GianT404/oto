@@ -2,8 +2,7 @@ package domain
 
 import "context"
 
-// StreamInfo mô tả URL audio để chơi trực tiếp kèm HTTP headers cần thiết
-// (User-Agent…) mà ffmpeg phải gửi kèm để CDN không chặn (403).
+// StreamInfo describes an audio URL and HTTP headers required by the CDN.
 type StreamInfo struct {
 	URL     string
 	Headers map[string]string

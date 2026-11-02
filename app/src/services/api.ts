@@ -166,8 +166,8 @@ class ApiService {
     }
 
     /**
-     * URL stream audio. clean=true → backend chạy ffmpeg silenceremove
-     * (cắt khoảng lặng < -50dB kéo dài >= 1s) — chậm hơn vì transcode realtime.
+     * Audio stream URL. clean=true → backend removes quiet Opus frames
+     * (below -50dB for at least 1s) using its Go decoder/encoder.
      */
     getStreamUrl(videoId: string, clean = false): string {
         const url = `${this.baseUrl}/api/v1/stream?id=${encodeURIComponent(videoId)}`;

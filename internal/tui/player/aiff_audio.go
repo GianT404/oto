@@ -23,6 +23,18 @@ func openAIFFAudio(path string, startSec float64) (*beepAudioReader, error) {
 	if err != nil {
 		return nil, err
 	}
+	return decodeAIFFAudio(f, startSec)
+}
+
+func openAIFFAudioURL(rawURL string, headers map[string]string, startSec float64) (*beepAudioReader, error) {
+	r, err := openHTTPRangeReader(rawURL, headers)
+	if err != nil {
+		return nil, err
+	}
+	return decodeAIFFAudio(r, startSec)
+}
+
+func decodeAIFFAudio(f readSeekCloser, startSec float64) (*beepAudioReader, error) {
 	decoder, err := aiff.NewPCMReader(f)
 	if err != nil {
 		f.Close()

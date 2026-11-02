@@ -41,6 +41,7 @@ type presetPCMReader struct {
 	echo   [][2]float64
 	index  int
 	eof    atomic.Bool
+	err    atomic.Pointer[error]
 }
 
 func applyNativePreset(source io.ReadCloser, mode nativePreset) io.ReadCloser {
@@ -58,6 +59,9 @@ func (r *presetPCMReader) Read(dst []byte) (int, error) {
 	n, err := r.source.Read(dst)
 	if err != nil {
 		r.eof.Store(true)
+		if err != io.EOF {
+			storePlaybackError(&r.err, err)
+		}
 	}
 	frames := n / 4
 	for i := 0; i < frames; i++ {
@@ -96,6 +100,13 @@ func (r *presetPCMReader) bass(sample float64, channel int) float64 {
 
 func (r *presetPCMReader) Close() error   { return r.source.Close() }
 func (r *presetPCMReader) finished() bool { return r.eof.Load() }
+
+func (r *presetPCMReader) playbackError() error {
+	if err := r.err.Load(); err != nil {
+		return *err
+	}
+	return playbackErrorFrom(r.source)
+}
 
 func clampInt16(sample float64) int16 {
 	if sample > 32767 {

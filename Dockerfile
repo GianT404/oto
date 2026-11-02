@@ -11,7 +11,7 @@ RUN CGO_ENABLED=0 GOOS=linux go build -o oto-backend ./cmd/server/main.go
 
 FROM alpine:latest
 
-RUN apk add --no-cache python3 py3-pip ffmpeg ca-certificates \
+RUN apk add --no-cache python3 py3-pip ca-certificates \
     && pip install --no-cache-dir --break-system-packages yt-dlp \
     && adduser -D -u 10001 otouser \
     && mkdir -p /var/cache/oto/yt-dlp \

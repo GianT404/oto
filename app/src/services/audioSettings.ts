@@ -8,7 +8,7 @@ export type SampleRate = 'auto' | '44100' | '48000' | '96000';
 export interface AudioSettings {
     bufferSize: BufferSize;
     sampleRate: SampleRate;
-    /** Smart Silence Skip: cắt khoảng lặng dưới -50dB kéo dài >= 1s (backend ffmpeg). */
+    /** Smart Silence Skip: cắt khoảng lặng dưới -50dB kéo dài >= 1s. */
     smartSilenceSkip: boolean;
 }
 

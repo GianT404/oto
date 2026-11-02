@@ -16,6 +16,7 @@ type speedPCMReader struct {
 	loaded  bool
 	done    bool
 	eof     atomic.Bool
+	err     atomic.Pointer[error]
 }
 
 func withPlaybackSpeed(source io.ReadCloser, speed float64) io.ReadCloser {
@@ -41,6 +42,7 @@ func (r *speedPCMReader) Read(dst []byte) (int, error) {
 				if err == io.EOF || err == io.ErrUnexpectedEOF {
 					break
 				}
+				storePlaybackError(&r.err, err)
 				if written == 0 {
 					return 0, err
 				}
@@ -56,6 +58,9 @@ func (r *speedPCMReader) Read(dst []byte) (int, error) {
 			r.loaded = false
 			if _, err := io.ReadFull(r.source, r.current[:]); err != nil {
 				r.done = true
+				if err != io.EOF && err != io.ErrUnexpectedEOF {
+					storePlaybackError(&r.err, err)
+				}
 				if err != io.EOF && err != io.ErrUnexpectedEOF && written == 0 {
 					return 0, err
 				}
@@ -75,3 +80,10 @@ func (r *speedPCMReader) Read(dst []byte) (int, error) {
 
 func (r *speedPCMReader) Close() error   { return r.source.Close() }
 func (r *speedPCMReader) finished() bool { return r.eof.Load() }
+
+func (r *speedPCMReader) playbackError() error {
+	if err := r.err.Load(); err != nil {
+		return *err
+	}
+	return playbackErrorFrom(r.source)
+}

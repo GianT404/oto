@@ -9,7 +9,7 @@ function Err($msg)  { Write-Host "ERROR: $msg" -ForegroundColor Red; exit 1 }
 function Install-Deps {
     New-Item -ItemType Directory -Force -Path $DestDir | Out-Null
 
-    # 1. Fetch yt-dlp.exe
+    # Fetch yt-dlp.exe
     $ytDlpPath = Join-Path $DestDir "yt-dlp.exe"
     if (-not (Test-Path $ytDlpPath)) {
         Info "Downloading yt-dlp..."
@@ -18,23 +18,6 @@ function Install-Deps {
         Info "yt-dlp already installed."
     }
 
-    # 2. Fetch FFmpeg static build
-    $ffmpegPath = Join-Path $DestDir "ffmpeg.exe"
-    if (-not (Test-Path $ffmpegPath)) {
-        Info "Downloading FFmpeg static build (Gyan)..."
-        $zipPath = Join-Path $env:TEMP "ffmpeg_static.zip"
-        Invoke-WebRequest -Uri "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-win64-gpl.zip" -OutFile $zipPath
-
-        Info "Extracting FFmpeg..."
-        Expand-Archive -Path $zipPath -DestinationPath $env:TEMP -Force
-
-        $extractedDir = Join-Path $env:TEMP "ffmpeg-master-latest-win64-gpl\bin"
-        Move-Item -Path (Join-Path $extractedDir "ffmpeg.exe") -Destination $DestDir -Force
-        Move-Item -Path (Join-Path $extractedDir "ffprobe.exe") -Destination $DestDir -Force
-
-        Remove-Item -Path $zipPath -Force
-        Remove-Item -Path (Join-Path $env:TEMP "ffmpeg-master-latest-win64-gpl") -Recurse -Force
-    }
 }
 
 # Find the newest release that actually contains an asset named <name>.
