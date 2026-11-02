@@ -117,21 +117,14 @@ func GetDirectAudio(ctx context.Context, videoID string, destPath string) error 
 	formats.Sort()
 	var bestFormat *youtube.Format
 	for i := range formats {
-		if formats[i].ItagNo == 140 {
+		mime := strings.ToLower(formats[i].MimeType)
+		if strings.Contains(mime, "audio/") && !strings.Contains(mime, "video") && strings.Contains(mime, "opus") {
 			bestFormat = &formats[i]
 			break
 		}
 	}
 	if bestFormat == nil {
-		for i := range formats {
-			if strings.Contains(formats[i].MimeType, "audio/mp4") {
-				bestFormat = &formats[i]
-				break
-			}
-		}
-	}
-	if bestFormat == nil {
-		return fmt.Errorf("no opus audio format found")
+		return fmt.Errorf("no supported Opus audio format found")
 	}
 
 	stream, _, err := client.GetStreamContext(ctx, video, bestFormat)

@@ -794,8 +794,7 @@ func fetchStreamInfoLib(ctx context.Context, videoID string) *StreamInfo {
 	return &StreamInfo{URL: url, Title: v.Title, Headers: map[string]string{"User-Agent": defaultUA}}
 }
 
-// bestAudioLibFormat chọn format audio-only tốt nhất (ops: 251 > 250 >
-// 249; mp4 aac: 140 > 139; còn lại theo bitrate giảm dần).
+// bestAudioLibFormat prefers Opus and skips AAC/MP4 formats unsupported by the player.
 func bestAudioLibFormat(fl youtube.FormatList) *youtube.Format {
 	var best *youtube.Format
 	for _, f := range fl {
@@ -811,15 +810,22 @@ func bestAudioLibFormat(fl youtube.FormatList) *youtube.Format {
 }
 
 func isAudioOnlyLibFormat(mime string) bool {
-	return strings.Contains(mime, "audio/") && !strings.Contains(mime, "video")
+	lower := strings.ToLower(mime)
+	if strings.Contains(lower, "audio/webm") {
+		return strings.Contains(lower, "opus")
+	}
+	return strings.Contains(lower, "audio/") &&
+		!strings.Contains(lower, "video") &&
+		!strings.Contains(lower, "mp4") &&
+		!strings.Contains(lower, "aac")
 }
 
 func libAudioRank(f youtube.Format) int {
-	rank := map[int]int{251: 100, 250: 90, 140: 80, 249: 70, 260: 60, 139: 50}[f.ItagNo]
+	rank := map[int]int{251: 100, 250: 90, 249: 80}[f.ItagNo]
 	if rank != 0 {
 		return rank
 	}
-	// Mime type chứa "opus" ưu tiên hơn aac khi itag lạ.
+	// Prefer Opus when YouTube assigns an unfamiliar itag.
 	if strings.Contains(f.MimeType, "opus") {
 		return 40
 	}

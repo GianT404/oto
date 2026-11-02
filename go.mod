@@ -17,12 +17,9 @@ require (
 	github.com/kkdai/youtube/v2 v2.10.6
 	github.com/mattn/go-runewidth v0.0.27
 	github.com/minio/selfupdate v0.6.0
-	github.com/mycophonic/saprobe-alac v1.0.0-rc3
 	github.com/pion/opus v0.1.0
 	github.com/spf13/cobra v1.10.2
 	github.com/thesyncim/gopus v0.1.2
-	github.com/tphakala/go-aac v0.6.0
-	github.com/tphakala/go-m4a v0.5.0
 	modernc.org/sqlite v1.57.0
 )
 
@@ -60,7 +57,7 @@ require (
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/spf13/pflag v1.0.10 // indirect
-	github.com/tphakala/simd v1.9.0 // indirect
+	github.com/stretchr/testify v1.12.1 // indirect
 	github.com/xo/terminfo v0.0.0-20220910002029-abceb7e1c41e // indirect
 	golang.org/x/crypto v0.38.0 // indirect
 	golang.org/x/sync v0.24.0 // indirect

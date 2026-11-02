@@ -39,7 +39,7 @@ https://github.com/user-attachments/assets/d7bf017b-7a73-4f7e-8d07-964e5f460249
 | Feature | Description |
 |---------|-------------|
 | Search & Stream | YouTube search, stream audio without full download |
-| Offline Playback | Download tracks (`.opus`) and play local `.mp3`, `.wav`, `.flac`, Vorbis `.ogg`/`.oga`, AAC-LC `.aac`/`.m4a`, ALAC `.m4a`, Opus `.webm`, and PCM `.aiff`/`.aif` files |
+| Offline Playback | Download tracks (`.opus`) and play local `.mp3`, `.wav`, `.flac`, Vorbis `.ogg`/`.oga`, Opus `.webm`, and PCM `.aiff`/`.aif` files |
 | Playlists | Create, manage, and play custom playlists |
 | Synced Lyrics | LRCLib + YouTube subtitles fallback, multi-language, millisecond-precise seeking |
 | Audio Presets | Bass Boost, Nightcore, Daycore, Lo-Fi via command menu |

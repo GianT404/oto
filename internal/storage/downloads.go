@@ -329,13 +329,11 @@ func IsSupportedAudio(name string) bool {
 	lower := strings.ToLower(name)
 	return strings.HasSuffix(lower, ".opus") ||
 		strings.HasSuffix(lower, ".mp3") ||
-		strings.HasSuffix(lower, ".m4a") ||
 		strings.HasSuffix(lower, ".flac") ||
 		strings.HasSuffix(lower, ".wav") ||
 		strings.HasSuffix(lower, ".ogg") ||
 		strings.HasSuffix(lower, ".oga") ||
 		strings.HasSuffix(lower, ".webm") ||
-		strings.HasSuffix(lower, ".aac") ||
 		strings.HasSuffix(lower, ".aiff") ||
 		strings.HasSuffix(lower, ".aif")
 }

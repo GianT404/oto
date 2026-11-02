@@ -18,10 +18,6 @@ func openNativeURL(rawURL string, headers map[string]string, startSec float64) (
 		return nil, false, err
 	}
 	ext := strings.ToLower(filepath.Ext(req.URL.Path))
-	if ext == ".m4a" || ext == ".mp4" {
-		reader, err := openM4AAudioURL(rawURL, headers, startSec)
-		return reader, err == nil, err
-	}
 	if ext == ".aiff" || ext == ".aif" {
 		reader, err := openAIFFAudioURL(rawURL, headers, startSec)
 		return reader, err == nil, err
@@ -48,12 +44,8 @@ func openNativeURL(rawURL string, headers map[string]string, startSec float64) (
 			ext = ".flac"
 		case "audio/wav", "audio/x-wav":
 			ext = ".wav"
-		case "audio/aac", "audio/aacp":
-			ext = ".aac"
 		case "audio/webm", "video/webm":
 			ext = ".webm"
-		case "audio/mp4", "video/mp4", "application/mp4", "audio/x-m4a":
-			ext = ".m4a"
 		case "audio/aiff", "audio/x-aiff":
 			ext = ".aiff"
 		}
@@ -64,11 +56,6 @@ func openNativeURL(rawURL string, headers map[string]string, startSec float64) (
 		reader, err = openOggOpusReader(resp.Body, time.Duration(startSec*float64(time.Second)))
 	case ".mp3", ".wav", ".flac", ".ogg", ".oga":
 		reader, err = decodeBeepAudio(ext, resp.Body, startSec, false)
-	case ".aac":
-		reader, err = decodeAACAudio(resp.Body, startSec)
-	case ".m4a", ".mp4":
-		_ = resp.Body.Close()
-		reader, err = openM4AAudioURL(rawURL, headers, startSec)
 	case ".aiff", ".aif":
 		_ = resp.Body.Close()
 		reader, err = openAIFFAudioURL(rawURL, headers, startSec)

@@ -10,6 +10,11 @@ import (
 	"github.com/gopxl/beep/v2"
 )
 
+type readSeekCloser interface {
+	io.ReadSeeker
+	io.Closer
+}
+
 type aiffPCMStreamer struct {
 	decoder *aiff.PCMReader
 	format  aiff.PCMFormat
