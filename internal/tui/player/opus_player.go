@@ -256,6 +256,8 @@ func (p *Player) playFromLocked(filePath string, startSec float64, headers map[s
 				reader, err = openM4AAudio(filePath, startSec)
 			case ".webm":
 				reader, err = openWebMOpus(filePath, startSec)
+			case ".aiff", ".aif":
+				reader, err = openAIFFAudio(filePath, startSec)
 			}
 		}
 		if err != nil {
@@ -567,6 +569,8 @@ func (p *Player) PreDecodeNext(filePath string, headers map[string]string) {
 				pipe, _ = openM4AAudio(filePath, 0)
 			case ".webm":
 				pipe, _ = openWebMOpus(filePath, 0)
+			case ".aiff", ".aif":
+				pipe, _ = openAIFFAudio(filePath, 0)
 			}
 		}
 		if pipe != nil {

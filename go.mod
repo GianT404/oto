@@ -8,6 +8,7 @@ require (
 	charm.land/bubbletea/v2 v2.0.9
 	charm.land/lipgloss/v2 v2.0.6
 	github.com/5rahim/gomkv v0.2.1
+	github.com/cwbudde/aiff v0.1.0
 	github.com/ebitengine/oto/v3 v3.4.0
 	github.com/gen2brain/malgo v0.11.26
 	github.com/go-chi/chi/v5 v5.2.5
@@ -40,6 +41,7 @@ require (
 	github.com/dop251/goja v0.0.0-20260311135729-065cd970411c // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/ebitengine/purego v0.9.0 // indirect
+	github.com/go-audio/audio v1.0.0 // indirect
 	github.com/go-sourcemap/sourcemap v2.1.4+incompatible // indirect
 	github.com/google/pprof v0.0.0-20260802141513-ef3492d7dac3 // indirect
 	github.com/google/uuid v1.6.0 // indirect
