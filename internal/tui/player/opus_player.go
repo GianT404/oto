@@ -218,24 +218,32 @@ func (p *Player) playFromLocked(filePath string, startSec float64, headers map[s
 	p.lastErr = nil
 	p.stopped = false
 	p.generation++
-	if (strings.HasPrefix(filePath, "http://") || strings.HasPrefix(filePath, "https://")) && !p.skipSilence && p.audioFilter == "dynaudnorm=f=250:g=11:p=0.9:m=10" {
-		if reader, ok, _ := openNativeURL(filePath, headers, startSec); ok {
-			reader = withPlaybackSpeed(reader, speed)
-			p.directReader = reader
-			p.player = p.otoCtx.NewPlayer(reader)
-			p.player.SetVolume(p.volume)
-			p.player.Play()
-			p.state = Playing
-			go p.watchDirectPlayback(reader, p.generation, p.player)
-			return nil
+	if strings.HasPrefix(filePath, "http://") || strings.HasPrefix(filePath, "https://") {
+		mode, presetSpeed, supported := nativePresetFor(p.audioFilter)
+		if !supported {
+			mode = presetNormal
+		}
+		if supported {
+			if reader, ok, _ := openNativeURL(filePath, headers, startSec); ok {
+				reader = applyNativePreset(reader, mode)
+				if p.skipSilence {
+					reader = skipSilence(reader)
+				}
+				reader = withPlaybackSpeed(reader, speed*presetSpeed)
+				p.directReader = reader
+				p.player = p.otoCtx.NewPlayer(reader)
+				p.player.SetVolume(p.volume)
+				p.player.Play()
+				p.state = Playing
+				go p.watchDirectPlayback(reader, p.generation, p.player)
+				return nil
+			}
 		}
 	}
 	if !strings.HasPrefix(filePath, "http://") && !strings.HasPrefix(filePath, "https://") {
 		var reader io.ReadCloser
 		var err error
-		// Keep silence removal and custom presets on FFmpeg until their native
-		// effects are implemented. Native readers handle normalization and speed.
-		nativeCompatible := p.audioFilter == "dynaudnorm=f=250:g=11:p=0.9:m=10"
+		mode, presetSpeed, nativeCompatible := nativePresetFor(p.audioFilter)
 		if nativeCompatible {
 			switch strings.ToLower(filepath.Ext(filePath)) {
 			case ".opus":
@@ -248,10 +256,11 @@ func (p *Player) playFromLocked(filePath string, startSec float64, headers map[s
 			return fmt.Errorf("open audio: %w", err)
 		}
 		if reader != nil {
+			reader = applyNativePreset(reader, mode)
 			if p.skipSilence {
 				reader = skipSilence(reader)
 			}
-			reader = withPlaybackSpeed(reader, speed)
+			reader = withPlaybackSpeed(reader, speed*presetSpeed)
 			p.directReader = reader
 			p.player = p.otoCtx.NewPlayer(reader)
 			p.player.SetVolume(p.volume)
@@ -333,6 +342,8 @@ func (p *Player) watchDirectPlayback(reader io.ReadCloser, gen uint64, optr *oto
 			return direct.finished()
 		case *gaplessReader:
 			return direct.eof.Load()
+		case *presetPCMReader:
+			return direct.finished()
 		default:
 			return false
 		}
@@ -527,7 +538,7 @@ func (p *Player) PreDecodeNext(filePath string, headers map[string]string) {
 
 	var cmd *exec.Cmd
 	var pipe io.ReadCloser
-	native := p.audioFilter == "dynaudnorm=f=250:g=11:p=0.9:m=10"
+	mode, presetSpeed, native := nativePresetFor(p.audioFilter)
 	if native {
 		if strings.HasPrefix(filePath, "http://") || strings.HasPrefix(filePath, "https://") {
 			pipe, _, _ = openNativeURL(filePath, headers, 0)
@@ -540,10 +551,11 @@ func (p *Player) PreDecodeNext(filePath string, headers map[string]string) {
 			}
 		}
 		if pipe != nil {
+			pipe = applyNativePreset(pipe, mode)
 			if p.skipSilence {
 				pipe = skipSilence(pipe)
 			}
-			pipe = withPlaybackSpeed(pipe, speed)
+			pipe = withPlaybackSpeed(pipe, speed*presetSpeed)
 		}
 	}
 	if pipe == nil {
