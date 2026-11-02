@@ -424,6 +424,7 @@ func (y *YtdlpScraper) DownloadAudio(ctx context.Context, videoID string) (strin
 	tempFile := filepath.Join(os.TempDir(), fmt.Sprintf("dopus%s.opus", videoID))
 	partialFile := filepath.Join(os.TempDir(), fmt.Sprintf("dopus%s.part.opus", videoID))
 	partialTemplate := filepath.Join(os.TempDir(), fmt.Sprintf("dopus%s.part.%%(ext)s", videoID))
+	partialWebM := filepath.Join(os.TempDir(), fmt.Sprintf("dopus%s.part.webm", videoID))
 
 	if isOpusFile(tempFile) {
 		return tempFile, nil
@@ -432,6 +433,7 @@ func (y *YtdlpScraper) DownloadAudio(ctx context.Context, videoID string) (strin
 	cleanupStaleTempFiles()
 	_ = os.Remove(tempFile)
 	_ = os.Remove(partialFile)
+	_ = os.Remove(partialWebM)
 
 	var lastErr error
 	for attempt := 0; ; attempt++ {
@@ -444,10 +446,8 @@ func (y *YtdlpScraper) DownloadAudio(ctx context.Context, videoID string) (strin
 		}
 
 		args := []string{
-			"-f", "bestaudio",
+			"-f", "bestaudio[acodec=opus]",
 			"--socket-timeout", "20",
-			"-x", "--audio-format", "opus",
-			"--embed-metadata",
 			"-o", partialTemplate,
 			"--no-playlist",
 			"--no-part",
@@ -464,15 +464,24 @@ func (y *YtdlpScraper) DownloadAudio(ctx context.Context, videoID string) (strin
 
 		if err := cmd.Run(); err != nil {
 			lastErr = fmt.Errorf("yt-dlp download (%s): %w: %s", client, err, stderr.String())
-			_ = os.Remove(partialFile)
+			removeYtAudioPartials(videoID)
 			if ytRetryable(lastErr.Error()) {
 				continue
 			}
 			return "", lastErr
 		}
+		if _, err := os.Stat(partialWebM); err != nil {
+			removeYtAudioPartials(videoID)
+			return "", fmt.Errorf("yt-dlp download: expected WebM Opus output: %w", err)
+		}
+		if err := remuxWebMOpus(partialWebM, partialFile); err != nil {
+			removeYtAudioPartials(videoID)
+			return "", fmt.Errorf("yt-dlp download: remux WebM Opus: %w", err)
+		}
+		_ = os.Remove(partialWebM)
 		if !isOpusFile(partialFile) {
 			_ = os.Remove(partialFile)
-			return "", fmt.Errorf("yt-dlp download: output is not a playable opus file")
+			return "", fmt.Errorf("yt-dlp download: remux output is not a playable opus file")
 		}
 		if err := os.Rename(partialFile, tempFile); err != nil {
 			_ = os.Remove(partialFile)
@@ -480,6 +489,13 @@ func (y *YtdlpScraper) DownloadAudio(ctx context.Context, videoID string) (strin
 		}
 		markClientSuccess(client)
 		return tempFile, nil
+	}
+}
+
+func removeYtAudioPartials(videoID string) {
+	paths, _ := filepath.Glob(filepath.Join(os.TempDir(), fmt.Sprintf("dopus%s.part.*", videoID)))
+	for _, path := range paths {
+		_ = os.Remove(path)
 	}
 }
 

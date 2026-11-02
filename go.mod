@@ -7,6 +7,7 @@ require (
 	charm.land/bubbles/v2 v2.2.1
 	charm.land/bubbletea/v2 v2.0.9
 	charm.land/lipgloss/v2 v2.0.6
+	github.com/5rahim/gomkv v0.2.1
 	github.com/ebitengine/oto/v3 v3.4.0
 	github.com/gen2brain/malgo v0.11.26
 	github.com/go-chi/chi/v5 v5.2.5
@@ -55,7 +56,7 @@ require (
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/spf13/pflag v1.0.10 // indirect
 	github.com/xo/terminfo v0.0.0-20220910002029-abceb7e1c41e // indirect
-	golang.org/x/crypto v0.0.0-20211209193657-4570a0811e8b // indirect
+	golang.org/x/crypto v0.38.0 // indirect
 	golang.org/x/sync v0.22.0 // indirect
 	golang.org/x/sys v0.47.0 // indirect
 	golang.org/x/text v0.35.0 // indirect
