@@ -1,6 +1,6 @@
 module oto
 
-go 1.26
+go 1.26.0
 
 require (
 	aead.dev/minisign v0.2.0
@@ -19,6 +19,7 @@ require (
 	github.com/pion/opus v0.1.0
 	github.com/spf13/cobra v1.10.2
 	github.com/thesyncim/gopus v0.1.2
+	github.com/tphakala/go-aac v0.6.0
 	modernc.org/sqlite v1.57.0
 )
 
@@ -55,10 +56,11 @@ require (
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/spf13/pflag v1.0.10 // indirect
+	github.com/tphakala/simd v1.9.0 // indirect
 	github.com/xo/terminfo v0.0.0-20220910002029-abceb7e1c41e // indirect
 	golang.org/x/crypto v0.38.0 // indirect
 	golang.org/x/sync v0.22.0 // indirect
-	golang.org/x/sys v0.47.0 // indirect
+	golang.org/x/sys v0.49.0 // indirect
 	golang.org/x/text v0.35.0 // indirect
 	modernc.org/libc v1.74.4 // indirect
 	modernc.org/mathutil v1.7.1 // indirect

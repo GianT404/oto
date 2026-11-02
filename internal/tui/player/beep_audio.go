@@ -14,6 +14,7 @@ import (
 	"github.com/gopxl/beep/v2/mp3"
 	"github.com/gopxl/beep/v2/vorbis"
 	"github.com/gopxl/beep/v2/wav"
+	aacpcm "github.com/tphakala/go-aac/pcm"
 )
 
 type beepAudioReader struct {
@@ -34,6 +35,79 @@ func openBeepAudio(path string, startSec float64) (*beepAudioReader, error) {
 	}
 	return decodeBeepAudio(filepath.Ext(path), f, startSec, true)
 }
+
+func openAACAudio(path string, startSec float64) (*beepAudioReader, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	return decodeAACAudio(f, startSec)
+}
+
+func decodeAACAudio(f io.ReadCloser, startSec float64) (*beepAudioReader, error) {
+	decoder, err := aacpcm.NewDecoder(f)
+	if err != nil {
+		f.Close()
+		return nil, err
+	}
+	info := decoder.Info()
+	if info.Channels != 1 && info.Channels != 2 {
+		f.Close()
+		return nil, errors.New("unsupported AAC channel count")
+	}
+	stream := beep.Resample(8, beep.SampleRate(info.SampleRate), beep.SampleRate(48000), &aacPCMStreamer{
+		decoder:  decoder,
+		channels: info.Channels,
+		buffer:   make([]byte, 512*info.Channels*2),
+	})
+	if startSec > 0 {
+		remaining := int(startSec * 48000)
+		frames := make([][2]float64, 512)
+		for remaining > 0 {
+			n, ok := stream.Stream(frames[:min(remaining, len(frames))])
+			remaining -= n
+			if !ok || n == 0 {
+				break
+			}
+		}
+	}
+	return &beepAudioReader{stream: stream, closer: f, frames: make([][2]float64, 512), gain: 1}, nil
+}
+
+type aacPCMStreamer struct {
+	decoder  io.Reader
+	channels int
+	buffer   []byte
+	done     bool
+	err      error
+}
+
+func (s *aacPCMStreamer) Stream(dst [][2]float64) (int, bool) {
+	if s.done || len(dst) == 0 {
+		return 0, !s.done
+	}
+	stride := s.channels * 2
+	need := min(len(dst)*stride, len(s.buffer))
+	n, err := io.ReadFull(s.decoder, s.buffer[:need])
+	frames := n / stride
+	for i := 0; i < frames; i++ {
+		left := float64(int16(binary.LittleEndian.Uint16(s.buffer[i*stride:]))) / 32768
+		right := left
+		if s.channels == 2 {
+			right = float64(int16(binary.LittleEndian.Uint16(s.buffer[i*stride+2:]))) / 32768
+		}
+		dst[i] = [2]float64{left, right}
+	}
+	if err != nil {
+		s.done = true
+		if err != io.EOF && err != io.ErrUnexpectedEOF {
+			s.err = err
+		}
+	}
+	return frames, !s.done
+}
+
+func (s *aacPCMStreamer) Err() error { return s.err }
 
 func decodeBeepAudio(ext string, f io.ReadCloser, startSec float64, seekable bool) (*beepAudioReader, error) {
 	var stream beep.StreamSeekCloser

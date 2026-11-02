@@ -39,6 +39,8 @@ func openNativeURL(rawURL string, headers map[string]string, startSec float64) (
 			ext = ".flac"
 		case "audio/wav", "audio/x-wav":
 			ext = ".wav"
+		case "audio/aac", "audio/aacp":
+			ext = ".aac"
 		}
 	}
 	var reader io.ReadCloser
@@ -47,6 +49,8 @@ func openNativeURL(rawURL string, headers map[string]string, startSec float64) (
 		reader, err = openOggOpusReader(resp.Body, time.Duration(startSec*float64(time.Second)))
 	case ".mp3", ".wav", ".flac", ".ogg", ".oga":
 		reader, err = decodeBeepAudio(ext, resp.Body, startSec, false)
+	case ".aac":
+		reader, err = decodeAACAudio(resp.Body, startSec)
 	default:
 		resp.Body.Close()
 		return nil, false, nil

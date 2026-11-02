@@ -250,6 +250,8 @@ func (p *Player) playFromLocked(filePath string, startSec float64, headers map[s
 				reader, err = openOggOpus(filePath, time.Duration(startSec*float64(time.Second)))
 			case ".mp3", ".wav", ".flac", ".ogg", ".oga":
 				reader, err = openBeepAudio(filePath, startSec)
+			case ".aac":
+				reader, err = openAACAudio(filePath, startSec)
 			}
 		}
 		if err != nil {
@@ -548,6 +550,8 @@ func (p *Player) PreDecodeNext(filePath string, headers map[string]string) {
 				pipe, _ = openOggOpus(filePath, 0)
 			case ".mp3", ".wav", ".flac", ".ogg", ".oga":
 				pipe, _ = openBeepAudio(filePath, 0)
+			case ".aac":
+				pipe, _ = openAACAudio(filePath, 0)
 			}
 		}
 		if pipe != nil {
