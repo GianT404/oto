@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/ebitengine/oto/v3"
@@ -50,6 +51,7 @@ type gaplessReader struct {
 	buf    []byte
 	offset int
 	pipe   io.ReadCloser
+	eof    atomic.Bool
 }
 
 func (r *gaplessReader) Read(p []byte) (n int, err error) {
@@ -58,7 +60,11 @@ func (r *gaplessReader) Read(p []byte) (n int, err error) {
 		r.offset += n
 		return n, nil
 	}
-	return r.pipe.Read(p)
+	n, err = r.pipe.Read(p)
+	if err != nil {
+		r.eof.Store(true)
+	}
+	return n, err
 }
 
 func (r *gaplessReader) Close() error {
@@ -325,6 +331,8 @@ func (p *Player) watchDirectPlayback(reader io.ReadCloser, gen uint64, optr *oto
 			return direct.finished()
 		case *silencePCMReader:
 			return direct.finished()
+		case *gaplessReader:
+			return direct.eof.Load()
 		default:
 			return false
 		}
@@ -517,19 +525,40 @@ func (p *Player) PreDecodeNext(filePath string, headers map[string]string) {
 		speed = 1.0
 	}
 
-	args := p.buildFFmpegArgs(filePath, headers, 0, speed)
-
-	cmd := exec.Command("ffmpeg", args...)
-	var stderr syncBuffer
-	cmd.Stderr = &stderr
-
-	pipe, err := cmd.StdoutPipe()
-	if err != nil {
-		return
+	var cmd *exec.Cmd
+	var pipe io.ReadCloser
+	native := p.audioFilter == "dynaudnorm=f=250:g=11:p=0.9:m=10"
+	if native {
+		if strings.HasPrefix(filePath, "http://") || strings.HasPrefix(filePath, "https://") {
+			pipe, _, _ = openNativeURL(filePath, headers, 0)
+		} else {
+			switch strings.ToLower(filepath.Ext(filePath)) {
+			case ".opus":
+				pipe, _ = openOggOpus(filePath, 0)
+			case ".mp3", ".wav", ".flac", ".ogg", ".oga":
+				pipe, _ = openBeepAudio(filePath, 0)
+			}
+		}
+		if pipe != nil {
+			if p.skipSilence {
+				pipe = skipSilence(pipe)
+			}
+			pipe = withPlaybackSpeed(pipe, speed)
+		}
 	}
-
-	if err := cmd.Start(); err != nil {
-		return
+	if pipe == nil {
+		args := p.buildFFmpegArgs(filePath, headers, 0, speed)
+		cmd = exec.Command("ffmpeg", args...)
+		var stderr syncBuffer
+		cmd.Stderr = &stderr
+		var err error
+		pipe, err = cmd.StdoutPipe()
+		if err != nil {
+			return
+		}
+		if err := cmd.Start(); err != nil {
+			return
+		}
 	}
 
 	p.nextCmd = cmd
@@ -555,9 +584,9 @@ func (p *Player) PreDecodeNext(filePath string, headers map[string]string) {
 		p.mu.Lock()
 		defer p.mu.Unlock()
 
-		if p.nextCmd != cmd || p.generation != p.nextGen {
+		if p.nextPipe != pipe || p.generation != p.nextGen {
 			_ = pipe.Close()
-			if p.nextCmd == cmd {
+			if cmd != nil && p.nextCmd == cmd {
 				// tự kill và Wait để không để lại zombie.
 				if cmd.Process != nil {
 					_ = cmd.Process.Kill()
@@ -579,12 +608,12 @@ func (p *Player) CancelPreDecode() {
 }
 
 func (p *Player) cancelPreDecodeLocked() {
-	if p.nextCmd != nil {
+	if p.nextCmd != nil || p.nextPipe != nil {
 		if p.nextPipe != nil {
 			_ = p.nextPipe.Close()
 		}
 		cmd := p.nextCmd
-		if cmd.Process != nil {
+		if cmd != nil && cmd.Process != nil {
 			_ = cmd.Process.Kill()
 			// Wait nền để thu hồi process đã kill, tránh zombie; không giữ
 			// mutex trong lúc chờ ffmpeg tắt.
@@ -603,7 +632,7 @@ func (p *Player) PlayFromBuffer() bool {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
-	if !p.nextReady || p.nextCmd == nil || p.nextPipe == nil {
+	if !p.nextReady || p.nextPipe == nil {
 		return false
 	}
 
@@ -621,7 +650,7 @@ func (p *Player) PlayFromBuffer() bool {
 
 	if p.otoCtx == nil {
 		_ = pipe.Close()
-		if cmd.Process != nil {
+		if cmd != nil && cmd.Process != nil {
 			_ = cmd.Process.Kill()
 			go func() { _ = cmd.Wait() }()
 		}
@@ -638,17 +667,17 @@ func (p *Player) PlayFromBuffer() bool {
 	p.decoder = cmd
 
 	reader := &gaplessReader{buf: buf, pipe: pipe}
+	p.directReader = reader
 
 	p.player = p.otoCtx.NewPlayer(reader)
 	p.player.SetVolume(p.volume)
 	p.player.Play()
 	p.state = Playing
 
-	go func(c *exec.Cmd, gen uint64, optr *oto.Player) {
-		err := c.Wait()
-
-		if optr != nil {
-			for optr.IsPlaying() {
+	if cmd != nil {
+		go func(c *exec.Cmd, gen uint64, optr *oto.Player) {
+			err := c.Wait()
+			for optr != nil && optr.IsPlaying() {
 				time.Sleep(50 * time.Millisecond)
 				p.mu.Lock()
 				isStopped := p.stopped
@@ -657,18 +686,19 @@ func (p *Player) PlayFromBuffer() bool {
 					break
 				}
 			}
-		}
-
-		p.mu.Lock()
-		defer p.mu.Unlock()
-		if p.decoder == c && p.generation == gen {
-			if err != nil && !p.stopped {
-				p.lastErr = err
+			p.mu.Lock()
+			defer p.mu.Unlock()
+			if p.decoder == c && p.generation == gen {
+				if err != nil && !p.stopped {
+					p.lastErr = err
+				}
+				p.state = Stopped
+				p.stopped = false
 			}
-			p.state = Stopped
-			p.stopped = false
-		}
-	}(cmd, p.generation, p.player)
+		}(cmd, p.generation, p.player)
+	} else {
+		go p.watchDirectPlayback(reader, p.generation, p.player)
+	}
 
 	return true
 }
