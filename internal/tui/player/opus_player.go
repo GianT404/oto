@@ -252,12 +252,19 @@ func (p *Player) playFromLocked(filePath string, startSec float64, headers map[s
 				reader, err = openBeepAudio(filePath, startSec)
 			case ".aac":
 				reader, err = openAACAudio(filePath, startSec)
-			case ".m4a":
+			case ".m4a", ".mp4":
 				reader, err = openM4AAudio(filePath, startSec)
 			}
 		}
 		if err != nil {
-			return fmt.Errorf("open audio: %w", err)
+			switch strings.ToLower(filepath.Ext(filePath)) {
+			case ".aac", ".m4a", ".mp4":
+				// AAC profiles and MP4 tracks outside the native decoder scope
+				// are still handled by the fallback while it remains available.
+				err = nil
+			default:
+				return fmt.Errorf("open audio: %w", err)
+			}
 		}
 		if reader != nil {
 			reader = applyNativePreset(reader, mode)
@@ -554,7 +561,7 @@ func (p *Player) PreDecodeNext(filePath string, headers map[string]string) {
 				pipe, _ = openBeepAudio(filePath, 0)
 			case ".aac":
 				pipe, _ = openAACAudio(filePath, 0)
-			case ".m4a":
+			case ".m4a", ".mp4":
 				pipe, _ = openM4AAudio(filePath, 0)
 			}
 		}

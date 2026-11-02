@@ -4,16 +4,19 @@ import (
 	"encoding/binary"
 	"errors"
 	"io"
+	"math"
 	"os"
 	"path/filepath"
 	"strings"
 	"sync/atomic"
+	"time"
 
 	"github.com/gopxl/beep/v2"
 	"github.com/gopxl/beep/v2/flac"
 	"github.com/gopxl/beep/v2/mp3"
 	"github.com/gopxl/beep/v2/vorbis"
 	"github.com/gopxl/beep/v2/wav"
+	"github.com/mycophonic/saprobe-alac"
 	aacpcm "github.com/tphakala/go-aac/pcm"
 	"github.com/tphakala/go-m4a/aacm4a"
 )
@@ -66,8 +69,33 @@ func openM4AAudio(path string, startSec float64) (*beepAudioReader, error) {
 	}
 	decoder, info, err := aacm4a.NewDecoder(f)
 	if err != nil {
-		f.Close()
-		return nil, err
+		if _, seekErr := f.Seek(0, io.SeekStart); seekErr != nil {
+			f.Close()
+			return nil, err
+		}
+		alacDecoder, alacErr := alac.NewDecoder(f)
+		if alacErr != nil {
+			f.Close()
+			return nil, errors.Join(err, alacErr)
+		}
+		format := alacDecoder.Format()
+		if format.Channels != 1 && format.Channels != 2 {
+			f.Close()
+			return nil, errors.New("unsupported ALAC channel count")
+		}
+		actual, seekErr := alacDecoder.Seek(time.Duration(startSec * float64(time.Second)))
+		if seekErr != nil {
+			f.Close()
+			return nil, seekErr
+		}
+		stride := format.Channels * ((format.BitDepth + 7) / 8)
+		target := time.Duration(startSec * float64(time.Second))
+		skipSamples := int64(float64(target-actual) * float64(format.SampleRate) / float64(time.Second))
+		pcm := io.Reader(alacDecoder)
+		if skipSamples > 0 {
+			pcm = &alacSkipReader{source: pcm, remaining: skipSamples * int64(stride)}
+		}
+		return newALACAudioReader(f, pcm, format.SampleRate, format.Channels, format.BitDepth)
 	}
 	if info.Channels != 1 && info.Channels != 2 {
 		f.Close()
@@ -90,6 +118,86 @@ func openM4AAudio(path string, startSec float64) (*beepAudioReader, error) {
 	}
 	return newAACAudioReader(f, limited, info.SampleRate, info.Channels, 0)
 }
+
+func newALACAudioReader(f io.ReadCloser, decoder io.Reader, sampleRate, channels, bitDepth int) (*beepAudioReader, error) {
+	stream := beep.Resample(8, beep.SampleRate(sampleRate), beep.SampleRate(48000), &alacPCMStreamer{
+		decoder:  decoder,
+		channels: channels,
+		bitDepth: bitDepth,
+		buffer:   make([]byte, 512*channels*((bitDepth+7)/8)),
+	})
+	return &beepAudioReader{stream: stream, closer: f, frames: make([][2]float64, 512), gain: 1}, nil
+}
+
+type alacSkipReader struct {
+	source    io.Reader
+	remaining int64
+}
+
+func (r *alacSkipReader) Read(dst []byte) (int, error) {
+	if r.remaining > 0 {
+		n, err := io.CopyN(io.Discard, r.source, r.remaining)
+		r.remaining -= n
+		if err != nil {
+			return 0, err
+		}
+	}
+	return r.source.Read(dst)
+}
+
+type alacPCMStreamer struct {
+	decoder  io.Reader
+	channels int
+	bitDepth int
+	buffer   []byte
+	done     bool
+	err      error
+}
+
+func (s *alacPCMStreamer) Stream(dst [][2]float64) (int, bool) {
+	if s.done || len(dst) == 0 {
+		return 0, !s.done
+	}
+	bytesPerSample := (s.bitDepth + 7) / 8
+	stride := s.channels * bytesPerSample
+	need := min(len(dst)*stride, len(s.buffer))
+	n, err := io.ReadFull(s.decoder, s.buffer[:need])
+	frames := n / stride
+	for i := 0; i < frames; i++ {
+		readSample := func(sample []byte) float64 {
+			var value int32
+			switch bytesPerSample {
+			case 2:
+				value = int32(int16(binary.LittleEndian.Uint16(sample)))
+			case 3:
+				raw := uint32(sample[0]) | uint32(sample[1])<<8 | uint32(sample[2])<<16
+				if raw&0x800000 != 0 {
+					raw |= 0xff000000
+				}
+				value = int32(raw)
+			case 4:
+				value = int32(binary.LittleEndian.Uint32(sample))
+			}
+			return float64(value) / math.Ldexp(1, bytesPerSample*8-1)
+		}
+		start := i * stride
+		left := readSample(s.buffer[start:])
+		right := left
+		if s.channels == 2 {
+			right = readSample(s.buffer[start+bytesPerSample:])
+		}
+		dst[i] = [2]float64{left, right}
+	}
+	if err != nil {
+		s.done = true
+		if err != io.EOF && err != io.ErrUnexpectedEOF {
+			s.err = err
+		}
+	}
+	return frames, !s.done
+}
+
+func (s *alacPCMStreamer) Err() error { return s.err }
 
 func newAACAudioReader(f io.ReadCloser, decoder io.Reader, sampleRate, channels int, startSec float64) (*beepAudioReader, error) {
 	stream := beep.Resample(8, beep.SampleRate(sampleRate), beep.SampleRate(48000), &aacPCMStreamer{
