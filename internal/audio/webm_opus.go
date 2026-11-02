@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"sync"
+	"time"
 
 	"github.com/5rahim/gomkv"
 	"github.com/thesyncim/gopus/container/ogg"
@@ -54,6 +55,32 @@ func RemuxWebMOpus(srcPath, dstPath string) (err error) {
 		return fmt.Errorf("finish Ogg Opus stream: %w", err)
 	}
 	return nil
+}
+
+// WebMOpusDuration returns the duration of an Opus track by summing its packet
+// sample counts. It reads container metadata and packets without decoding audio.
+func WebMOpusDuration(path string) (time.Duration, error) {
+	src, err := os.Open(path)
+	if err != nil {
+		return 0, err
+	}
+	defer src.Close()
+
+	track, err := discoverWebMOpusTrack(src)
+	if err != nil {
+		return 0, err
+	}
+	if _, err := src.Seek(0, io.SeekStart); err != nil {
+		return 0, err
+	}
+	blocks := &webmOpusBlocks{track: track.number}
+	if err := gomkv.ParseSections(src, blocks, gomkv.ClusterElement); err != nil {
+		return 0, err
+	}
+	if blocks.packets == 0 || blocks.samples == 0 {
+		return 0, errors.New("WebM Opus track contains no audio packets")
+	}
+	return time.Duration(blocks.samples) * time.Second / 48000, nil
 }
 
 // OpenWebMOpus returns an Ogg Opus stream backed by a WebM demux goroutine.
@@ -262,6 +289,7 @@ type webmOpusBlocks struct {
 	track   uint64
 	writer  *ogg.Writer
 	packets int
+	samples int64
 }
 
 func (h *webmOpusBlocks) HandleBinary(id gomkv.ElementID, block []byte, info gomkv.ElementInfo) error {
@@ -288,10 +316,13 @@ func (h *webmOpusBlocks) HandleBinary(id gomkv.ElementID, block []byte, info gom
 		if err != nil {
 			return err
 		}
-		if err := h.writer.WritePacket(packet, samples); err != nil {
-			return err
+		if h.writer != nil {
+			if err := h.writer.WritePacket(packet, samples); err != nil {
+				return err
+			}
 		}
 		h.packets++
+		h.samples += int64(samples)
 	}
 	return nil
 }

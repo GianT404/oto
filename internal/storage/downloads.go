@@ -1,17 +1,16 @@
 package storage
 
 import (
-	"bytes"
 	"database/sql"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
-	"os/exec"
 	"path/filepath"
-	"strconv"
 	"strings"
 	"time"
+
+	"oto/internal/audio"
 )
 
 var ErrDuplicateLocalName = errors.New("track title already exists")
@@ -346,23 +345,9 @@ func localFileSidecar(path string) string {
 	return strings.TrimSuffix(path, ext) + ".json"
 }
 
-// GetFileDuration trả về duration (giây) của file audio bằng ffprobe.
+// GetFileDuration returns the duration in seconds using the native Go audio readers.
 func GetFileDuration(path string) int {
-	cmd := exec.Command("ffprobe", "-v", "error",
-		"-show_entries", "format=duration",
-		"-of", "default=noprint_wrappers=1:nokey=1",
-		path,
-	)
-	var out bytes.Buffer
-	cmd.Stdout = &out
-	if err := cmd.Run(); err != nil {
-		return 0
-	}
-	sec, err := strconv.ParseFloat(strings.TrimSpace(out.String()), 64)
-	if err != nil {
-		return 0
-	}
-	return int(sec)
+	return int(audio.FileDuration(path).Seconds())
 }
 
 // ImportFromFilesystem scans the download directory and imports any audio files
