@@ -212,18 +212,29 @@ func (p *Player) playFromLocked(filePath string, startSec float64, headers map[s
 	p.lastErr = nil
 	p.stopped = false
 	p.generation++
-	if !strings.HasPrefix(filePath, "http://") && !strings.HasPrefix(filePath, "https://") && strings.EqualFold(filepath.Ext(filePath), ".opus") {
-		reader, err := openOggOpus(filePath, time.Duration(startSec*float64(time.Second)))
-		if err != nil {
-			return fmt.Errorf("open Opus audio: %w", err)
+	if !strings.HasPrefix(filePath, "http://") && !strings.HasPrefix(filePath, "https://") {
+		var reader io.ReadCloser
+		var err error
+		switch strings.ToLower(filepath.Ext(filePath)) {
+		case ".opus":
+			reader, err = openOggOpus(filePath, time.Duration(startSec*float64(time.Second)))
+		case ".mp3", ".wav", ".flac", ".ogg", ".oga":
+			reader, err = openBeepAudio(filePath, startSec)
+		default:
+			break
 		}
-		p.directReader = reader
-		p.player = p.otoCtx.NewPlayer(reader)
-		p.player.SetVolume(p.volume)
-		p.player.Play()
-		p.state = Playing
-		go p.watchDirectPlayback(reader, p.generation, p.player)
-		return nil
+		if err != nil {
+			return fmt.Errorf("open audio: %w", err)
+		}
+		if reader != nil {
+			p.directReader = reader
+			p.player = p.otoCtx.NewPlayer(reader)
+			p.player.SetVolume(p.volume)
+			p.player.Play()
+			p.state = Playing
+			go p.watchDirectPlayback(reader, p.generation, p.player)
+			return nil
+		}
 	}
 
 	args := p.buildFFmpegArgs(filePath, headers, startSec, speed)
@@ -285,13 +296,22 @@ func (p *Player) playFromLocked(filePath string, startSec float64, headers map[s
 }
 
 func (p *Player) watchDirectPlayback(reader io.ReadCloser, gen uint64, optr *oto.Player) {
-	direct, _ := reader.(*oggOpusReader)
+	finished := func() bool {
+		switch direct := reader.(type) {
+		case *oggOpusReader:
+			return direct.eof.Load()
+		case *beepAudioReader:
+			return direct.finished()
+		default:
+			return false
+		}
+	}
 	for optr != nil {
 		time.Sleep(50 * time.Millisecond)
 		p.mu.Lock()
 		active := p.directReader == reader && p.generation == gen && (p.state == Playing || p.state == Paused)
 		p.mu.Unlock()
-		if !active || (direct != nil && direct.eof.Load() && !optr.IsPlaying()) {
+		if !active || (finished() && !optr.IsPlaying()) {
 			break
 		}
 	}
@@ -300,9 +320,14 @@ func (p *Player) watchDirectPlayback(reader io.ReadCloser, gen uint64, optr *oto
 	if p.directReader == reader && p.generation == gen {
 		_ = reader.Close()
 		p.directReader = nil
-		if direct != nil {
+		switch direct := reader.(type) {
+		case *oggOpusReader:
 			if readErr := direct.readErr.Load(); readErr != nil {
 				p.lastErr = readErr.err
+			}
+		case *beepAudioReader:
+			if readErr := direct.readErr.Load(); readErr != nil {
+				p.lastErr = *readErr
 			}
 		}
 		p.state = Stopped
