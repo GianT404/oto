@@ -1,0 +1,19 @@
+<svg xmlns="http://w3.org" width="380" height="160">
+  <style>
+    text {
+      font-family: monospace;
+      font-size: 16px;
+      fill: #58a6ff;
+      white-space: pre;
+    }
+  </style>
+  <text x="10" y="25"> ▄██████▄      ███      ▄██████▄</text>
+  <text x="10" y="43">███    ███ ▀█████████▄ ███    ███</text>
+  <text x="10" y="61">███    ███    ▀███▀▀██ ███    ███</text>
+  <text x="10" y="79">███    ███     ███   ▀ ███    ███</text>
+  <text x="10" y="97">███    ███     ███     ███    ███</text>
+  <text x="10" y="115">███    ███     ███     ███    ███</text>
+  <text x="10" y="133">███    ███     ███     ███    ███</text>
+  <text x="10" y="151"> ▀██████▀     ▄████▀    ▀██████▀</text>
+</svg>
+
