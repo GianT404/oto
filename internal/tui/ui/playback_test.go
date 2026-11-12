@@ -68,6 +68,24 @@ func TestPrevRandomDoesNotGrowHistory(t *testing.T) {
 	}
 }
 
+func TestAutoAdvanceRecordsTrackForRandomPrevious(t *testing.T) {
+	pm := NewPlaybackManager()
+	pm.Player = &player.Player{}
+	pm.Random = true
+	pm.Playlist = []domain.Track{{ID: "a"}, {ID: "b"}}
+	pm.CurrentIdx = 0
+	pm.NowPlay = &pm.Playlist[0]
+	pm.SongStarted = true
+
+	pm.Update(PlaybackTickMsg{})
+	pm.Update(PlayNextMsg{})
+	pm.Update(PlayPrevMsg{})
+
+	if pm.NowPlay == nil || pm.NowPlay.ID != "a" {
+		t.Fatalf("now playing=%v, want a after previous", pm.NowPlay)
+	}
+}
+
 func TestQueuePlaybackPreservesPlaylistCursor(t *testing.T) {
 	pm := NewPlaybackManager()
 	pm.Player = &player.Player{}

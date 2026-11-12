@@ -393,6 +393,9 @@ func (pm *PlaybackManager) Update(msg tea.Msg) (*PlaybackManager, tea.Cmd) {
 
 		if ended {
 			playErr := pm.Player.PlaybackError()
+			if pm.Random && (len(pm.Queue) > 0 || len(pm.Playlist) > 1) {
+				pm.RecordHistory()
+			}
 			pm.NowPlay = nil
 
 			if playErr != nil {
