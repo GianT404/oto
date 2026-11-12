@@ -267,6 +267,10 @@ func StyleHint(key, val string) string {
 	return StyleHintActive(key, val, false)
 }
 
+func StyleAccent(s string) string {
+	return lipgloss.NewStyle().Foreground(colorAccent).Render(s)
+}
+
 func StyleHintActive(key, val string, active bool) string {
 	keyStyle := lipgloss.NewStyle().
 		Foreground(colorDark).

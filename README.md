@@ -1,14 +1,21 @@
-
 <!-- <p align="center">
   <img src="./assets/logo.svg" alt="oto Logo" width="120" />
 </p> -->
 
-<h1 align="center">oto</h1>
+<h1 align="center">
+<pre align="center"> ▄██████▄      ███      ▄██████▄
+███    ███ ▀█████████▄ ███    ███
+███    ███    ▀███▀▀██ ███    ███
+███    ███     ███   ▀ ███    ███
+███    ███     ███     ███    ███
+███    ███     ███     ███    ███
+███    ███     ███     ███    ███
+ ▀██████▀     ▄████▀    ▀██████▀
+</pre>
+</h1>
 
 <p align="center">
   <b>Terminal music player</b>
-  <br>
-  <b>Supported Platforms: Linux, Windows, Android, iOS</b>
 </p>
 
 <p align="center">
@@ -20,7 +27,6 @@
 ## Demo audio setting & sync lyrics
 
 https://github.com/user-attachments/assets/cae0c1d1-9f0d-4d6e-a48d-ece479d8826d
-
 
 ## Audio Visualizer
 
@@ -36,23 +42,23 @@ https://github.com/user-attachments/assets/d7bf017b-7a73-4f7e-8d07-964e5f460249
 
 ## Features
 
-| Feature | Description |
-|---------|-------------|
-| Search & Stream | YouTube search, stream audio without full download |
-| Offline Playback | Download tracks (`.opus`) and support for additional audio formats (`.mp3`, `.mp4`, `.flac`, `.m4a`, `.wav`, `.aac`, `.ogg`, `.webm`, `.wma`,`.aiff`,`.alac`) |
-| Playlists | Create, manage, and play custom playlists |
-| Synced Lyrics | LRCLib + YouTube subtitles fallback, multi-language, millisecond-precise seeking |
-| Audio Presets | Bass Boost, Nightcore, Daycore, Lo-Fi via command menu |
-| Media Controls | Lock screen & notification controls (play, pause, skip, seek) |
-| Shuffle | Smart shuffle — avoids replaying recent tracks and back-to-back same artist |
-| Audio Visualizer | Live 2D bar wireframe driven by real-time system audio (`\`) |
-| Theme | Default (accent colors) or Mono (all-white text), configurable in Settings |
-| Mouse Support | Click sidebar, double-click to play, wheel scroll, progress bar seek |
-| Gapless Playback | Pre-decodes next track when current has <3s remaining |
-| Resilient YouTube | Automatic yt-dlp client fallback against 403s |
-| Self Install/Update | `oto --install`, `oto --upgrade`, minisign signature verification |
-| CLI & Completion | Cobra with auto-completion for Zsh, Bash, Fish |
-| AVRCP/MPRIS2 | Bluetooth media controls on Linux desktop |
+| Feature             | Description                                                                                                                                                   |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Search & Stream     | YouTube search, stream audio without full download                                                                                                            |
+| Offline Playback    | Download tracks (`.opus`) and support for additional audio formats (`.mp3`, `.mp4`, `.flac`, `.m4a`, `.wav`, `.aac`, `.ogg`, `.webm`, `.wma`,`.aiff`,`.alac`) |
+| Playlists           | Create, manage, and play custom playlists                                                                                                                     |
+| Synced Lyrics       | LRCLib + YouTube subtitles fallback, multi-language, millisecond-precise seeking                                                                              |
+| Audio Presets       | Bass Boost, Nightcore, Daycore, Lo-Fi via command menu                                                                                                        |
+| Media Controls      | Lock screen & notification controls (play, pause, skip, seek)                                                                                                 |
+| Shuffle             | Smart shuffle — avoids replaying recent tracks and back-to-back same artist                                                                                   |
+| Audio Visualizer    | Live 2D bar wireframe driven by real-time system audio (`\`)                                                                                                  |
+| Theme               | Default (accent colors) or Mono (all-white text), configurable in Settings                                                                                    |
+| Mouse Support       | Click sidebar, double-click to play, wheel scroll, progress bar seek                                                                                          |
+| Gapless Playback    | Pre-decodes next track when current has <3s remaining                                                                                                         |
+| Resilient YouTube   | Automatic yt-dlp client fallback against 403s                                                                                                                 |
+| Self Install/Update | `oto --install`, `oto --upgrade`, minisign signature verification                                                                                             |
+| CLI & Completion    | Cobra with auto-completion for Zsh, Bash, Fish                                                                                                                |
+| AVRCP/MPRIS2        | Bluetooth media controls on Linux desktop                                                                                                                     |
 
 ---
 
@@ -93,14 +99,14 @@ go build -o server ./cmd/server
 
 Default port `8080`. Configure via env vars:
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `PORT` | `8080` | Server port |
-| `HOST` | (all) | Bind host |
-| `oto_DOWNLOAD_DIR` | `~/.local/share/oto` | Download directory |
-| `oto_YTDLP_COOKIES` | — | Netscape `cookies.txt` for age-gated/restricted content |
-| `oto_YTDLP_ARGS` | — | Extra yt-dlp args (e.g. `--proxy socks5://localhost:9050`) |
-| `oto_YTDLP_CLIENTS` | `web_embedded,web,tv_embedded,android,mweb,ios` | yt-dlp client fallback chain |
+| Variable            | Default                                         | Description                                                |
+| ------------------- | ----------------------------------------------- | ---------------------------------------------------------- |
+| `PORT`              | `8080`                                          | Server port                                                |
+| `HOST`              | (all)                                           | Bind host                                                  |
+| `oto_DOWNLOAD_DIR`  | `~/.local/share/oto`                            | Download directory                                         |
+| `oto_YTDLP_COOKIES` | —                                               | Netscape `cookies.txt` for age-gated/restricted content    |
+| `oto_YTDLP_ARGS`    | —                                               | Extra yt-dlp args (e.g. `--proxy socks5://localhost:9050`) |
+| `oto_YTDLP_CLIENTS` | `web_embedded,web,tv_embedded,android,mweb,ios` | yt-dlp client fallback chain                               |
 
 ### Build Mobile App
 
@@ -113,36 +119,34 @@ npx expo start
 
 ### TUI Key Bindings
 
-| Key | Action |
-|-----|--------|
-| `?` | Help popup |
-| `Tab` / `Shift+Tab` / `1`-`7` | Sidebar tabs |
-| `/` | Focus search input |
-| `:` | Command popup (add to queue,audio settings, playback, rename, delete, move to playlist, sort, file info) |
-| `\` | Audio visualizer |
-| `Enter` | Play selected track |
-| `Space` | Play / pause |
-| `]` / `[` | Next / previous |
-| `r` | Toggle shuffle |
-| `←` / `→` | Seek -/+ 5s |
-| `+` / `-` | Volume |
-| `l` | Choose lyrics language |
-| `pgup` / `pgdown` | Scroll lyrics |
-| `d` | Download selected track |
-| `Delete` | Remove playlist|
-| `Esc` | Settings popup |
-| `alt+q` | Quit |
+| Key                           | Action                                                                                                   |
+| ----------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `?`                           | Help popup                                                                                               |
+| `Tab` / `Shift+Tab` / `1`-`7` | Sidebar tabs                                                                                             |
+| `/`                           | Focus search input                                                                                       |
+| `:`                           | Command popup (add to queue,audio settings, playback, rename, delete, move to playlist, sort, file info) |
+| `\`                           | Audio visualizer                                                                                         |
+| `Enter`                       | Play selected track                                                                                      |
+| `Space`                       | Play / pause                                                                                             |
+| `]` / `[`                     | Next / previous                                                                                          |
+| `r`                           | Toggle shuffle                                                                                           |
+| `←` / `→`                     | Seek -/+ 5s                                                                                              |
+| `+` / `-`                     | Volume                                                                                                   |
+| `l`                           | Choose lyrics language                                                                                   |
+| `pgup` / `pgdown`             | Scroll lyrics                                                                                            |
+| `d`                           | Download selected track                                                                                  |
+| `Delete`                      | Remove playlist                                                                                          |
+| `Esc`                         | Settings popup                                                                                           |
+| `alt+q`                       | Quit                                                                                                     |
 
 ### Theme
 
 - **Default** — accent color on borders, selected items, and progress bar
 - **Mono** — all-white text and borders, no accent colors (high-contrast)
 
-
 ### Mouse Support
 
 default OFF.
-
 
 ### Logs
 
@@ -169,19 +173,19 @@ oto completion fish > ~/.config/fish/completions/oto.fish
 
 ## CLI Flags
 
-| Flag | Description |
-|------|-------------|
-| `--server <URL>` | Use a remote oto backend |
-| `--api-key <KEY>` | Authenticate with the remote backend |
-| `--download-dir <DIR>` | Set the music library directory |
-| `--install` | Install oto to a user-local bin directory |
-| `--upgrade` | Install the latest oto release |
-| `--check-update` | Check for a newer release |
-| `--uninstall` | Remove the user-local oto installation |
-| `--update-ytdlp` | Update yt-dlp and exit |
-| `--version` | Print the version and exit |
-| `--changelog` | Print the current release changelog |
-| `--stats` | Print listening time and library statistics |
+| Flag                   | Description                                 |
+| ---------------------- | ------------------------------------------- |
+| `--server <URL>`       | Use a remote oto backend                    |
+| `--api-key <KEY>`      | Authenticate with the remote backend        |
+| `--download-dir <DIR>` | Set the music library directory             |
+| `--install`            | Install oto to a user-local bin directory   |
+| `--upgrade`            | Install the latest oto release              |
+| `--check-update`       | Check for a newer release                   |
+| `--uninstall`          | Remove the user-local oto installation      |
+| `--update-ytdlp`       | Update yt-dlp and exit                      |
+| `--version`            | Print the version and exit                  |
+| `--changelog`          | Print the current release changelog         |
+| `--stats`              | Print listening time and library statistics |
 
 ---
 
@@ -198,13 +202,13 @@ If streaming fails with `403 Forbidden`:
 
 ## API
 
-| Endpoint | Params | Description |
-|----------|--------|-------------|
-| `GET /api/v1/search` | `q` | Search YouTube |
-| `GET /api/v1/stream` | `id` | Proxy audio stream |
-| `GET /api/v1/lyrics` | `id` | Fetch synced lyrics |
-| `GET /api/v1/resolve` | `id` | Resolve stream URL |
-| `GET /health` | — | Health check |
+| Endpoint              | Params | Description         |
+| --------------------- | ------ | ------------------- |
+| `GET /api/v1/search`  | `q`    | Search YouTube      |
+| `GET /api/v1/stream`  | `id`   | Proxy audio stream  |
+| `GET /api/v1/lyrics`  | `id`   | Fetch synced lyrics |
+| `GET /api/v1/resolve` | `id`   | Resolve stream URL  |
+| `GET /health`         | —      | Health check        |
 
 ---
 

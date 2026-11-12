@@ -26,6 +26,17 @@ import (
 
 var Version = "dev"
 
+const otoArt = `
+ ▄██████▄      ███      ▄██████▄
+███    ███ ▀█████████▄ ███    ███
+███    ███    ▀███▀▀██ ███    ███
+███    ███     ███   ▀ ███    ███
+███    ███     ███     ███    ███
+███    ███     ███     ███    ███
+███    ███     ███     ███    ███
+ ▀██████▀     ▄████▀    ▀██████▀
+`
+
 //go:embed changelog.txt
 var embeddedChangelog string
 
@@ -38,6 +49,7 @@ func main() {
 	var rootCmd = &cobra.Command{
 		Use:   "oto",
 		Short: "oto - Terminal Music Player",
+		Long:  ui.StyleAccent(otoArt),
 		Run: func(cmd *cobra.Command, args []string) {
 			if updateYtdlpFlag {
 				ytdlpPath := os.Getenv("YTDLP_PATH")
