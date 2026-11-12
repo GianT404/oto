@@ -1,7 +1,3 @@
-<!-- <p align="center">
-  <img src="./assets/logo.svg" alt="oto Logo" width="120" />
-</p> -->
-
 <p align="center">
   <img src="./assets/logo-ascii.svg" alt="OTO Logo" />
 </p>
@@ -47,9 +43,10 @@ https://github.com/user-attachments/assets/d7bf017b-7a73-4f7e-8d07-964e5f460249
 | Theme               | Default (accent colors) or Mono (all-white text), configurable in Settings                                                                                    |
 | Mouse Support       | Click sidebar, double-click to play, wheel scroll, progress bar seek                                                                                          |
 | Gapless Playback    | Pre-decodes next track when current has <3s remaining                                                                                                         |
+| Skip silence        | Automatically skip silent sections in the music track                                                                                                         |
 | Resilient YouTube   | Automatic yt-dlp client fallback against 403s                                                                                                                 |
 | Self Install/Update | `oto --install`, `oto --upgrade`, minisign signature verification                                                                                             |
-| CLI & Completion    | Cobra with auto-completion for Zsh, Bash, Fish                                                                                                                |
+| CLI & Completion    | Auto-completion for Zsh, Bash, Fish                                                                                                                           |
 | AVRCP/MPRIS2        | Bluetooth media controls on Linux desktop                                                                                                                     |
 
 ---
@@ -131,18 +128,13 @@ npx expo start
 | `Esc`                         | Settings popup                                                                                           |
 | `alt+q`                       | Quit                                                                                                     |
 
-### Theme
-
-- **Default** — accent color on borders, selected items, and progress bar
-- **Mono** — all-white text and borders, no accent colors (high-contrast)
-
 ### Mouse Support
 
 default OFF.
 
 ### Logs
 
-Logs tab captures all `log` output in-memory (last 2000 lines). Never written to disk during normal operation. On crash/panic, dumped to `~/crash_oto_tui_<timestamp>.log`.
+Logs tab captures all `log` output in-memory (last 2000 lines). On crash/panic, dumped to `~/crash_oto_tui_<timestamp>.log`.
 
 ---
 
@@ -178,17 +170,6 @@ oto completion fish > ~/.config/fish/completions/oto.fish
 | `--version`            | Print the version and exit                  |
 | `--changelog`          | Print the current release changelog         |
 | `--stats`              | Print listening time and library statistics |
-
----
-
-## YouTube 403 Fix
-
-If streaming fails with `403 Forbidden`:
-
-1. Update yt-dlp: `oto --update-ytdlp`
-2. Export cookies from a logged-in browser (`Get cookies.txt LOCALLY` extension) → set `oto_YTDLP_COOKIES=/path/to/cookies.txt`
-3. Override client chain: `oto_YTDLP_CLIENTS=web_embedded,android`
-4. Use proxy: `oto_YTDLP_ARGS="--proxy socks5://localhost:9050"`
 
 ---
 
