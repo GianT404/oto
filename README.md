@@ -2,16 +2,9 @@
   <img src="./assets/logo.svg" alt="oto Logo" width="120" />
 </p> -->
 
-<pre align="center"> 
- ▄██████▄      ███      ▄██████▄
-███    ███ ▀█████████▄ ███    ███
-███    ███    ▀███▀▀██ ███    ███
-███    ███     ███   ▀ ███    ███
-███    ███     ███     ███    ███
-███    ███     ███     ███    ███
-███    ███     ███     ███    ███
- ▀██████▀     ▄████▀    ▀██████▀
-</pre>
+<p align="center">
+  <img src="./assets/logo-ascii.svg" alt="OTO Logo" />
+</p>
 
 <p align="center">
   <b>Terminal music player</b>
