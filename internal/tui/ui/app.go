@@ -450,10 +450,11 @@ func (a *App) updateSystem(msg tea.Msg) ([]tea.Cmd, bool, bool) {
 
 	case tea.KeyPressMsg:
 		oldTab := a.sidebarActive
+		visualizerEscape := a.palette.Visible() && msg.String() == "esc"
 		if c := a.handleKeys(msg); c != nil {
 			cmds = append(cmds, c)
 		}
-		return cmds, true, oldTab != a.sidebarActive
+		return cmds, true, oldTab != a.sidebarActive || visualizerEscape
 	default:
 		return cmds, false, false
 	}
