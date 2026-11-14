@@ -116,7 +116,10 @@ func (c *HTTPProvider) ResolveStream(ctx context.Context, id string) (*domain.St
 	if err := json.Unmarshal(body, &rr); err != nil {
 		return nil, fmt.Errorf("resolve decode: %w", err)
 	}
-	return &domain.StreamInfo{URL: rr.URL}, nil
+	return &domain.StreamInfo{
+		URL:     rr.URL,
+		Headers: map[string]string{"X-API-Key": c.apiKey},
+	}, nil
 }
 
 func (c *HTTPProvider) Lyrics(ctx context.Context, id, title, artist string, duration int) (domain.LyricsResp, error) {
