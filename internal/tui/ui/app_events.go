@@ -194,7 +194,19 @@ func (a *App) handleAudioEvents(msg tea.Msg) tea.Cmd {
 			cmds = append(cmds, func() tea.Msg { return PlayNextMsg{} })
 		case "previous":
 			cmds = append(cmds, func() tea.Msg { return PlayPrevMsg{} })
-		case "play", "playpause":
+		case "play":
+			switch a.player.State() {
+			case player.Paused:
+				a.player.TogglePause()
+				if a.avrcp != nil {
+					a.avrcp.UpdatePlaybackStatus("Playing")
+				}
+			case player.Stopped:
+				if a.playback.NowPlay != nil {
+					cmds = append(cmds, func() tea.Msg { return PlayTrackAtMsg{Index: a.playback.CurrentIdx, Track: *a.playback.NowPlay} })
+				}
+			}
+		case "playpause":
 			switch a.player.State() {
 			case player.Paused:
 				a.player.TogglePause()
@@ -216,11 +228,6 @@ func (a *App) handleAudioEvents(msg tea.Msg) tea.Cmd {
 				a.player.TogglePause()
 				if a.avrcp != nil {
 					a.avrcp.UpdatePlaybackStatus("Paused")
-				}
-			} else if a.player.State() == player.Paused {
-				a.player.TogglePause()
-				if a.avrcp != nil {
-					a.avrcp.UpdatePlaybackStatus("Playing")
 				}
 			}
 		case "stop":
