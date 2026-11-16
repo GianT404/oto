@@ -12,9 +12,11 @@
   <img src="https://img.shields.io/badge/Expo-55-000020?logo=expo&logoColor=white" />
 </p>
 
-## Demo audio setting & sync lyrics
+## TUI
 
-https://github.com/user-attachments/assets/cae0c1d1-9f0d-4d6e-a48d-ece479d8826d
+<p align="centern">
+    <img src="./assets/demo.png"
+</p>
 
 ## Audio Visualizer
 
