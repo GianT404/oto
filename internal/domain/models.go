@@ -16,6 +16,7 @@ type LyricLine struct {
 
 type LyricsTrack struct {
 	Language   string      `json:"language"`
+	Source     string      `json:"source,omitempty"`
 	Synced     []LyricLine `json:"synced,omitempty"`
 	Plain      string      `json:"plain,omitempty"`
 	TrackName  string      `json:"trackName,omitempty"`

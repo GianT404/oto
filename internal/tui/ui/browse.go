@@ -690,12 +690,18 @@ func (p LeftPanel) Update(msg tea.Msg, focused bool, nowPlay *domain.Track) (Lef
 			p.loadingStream = false
 			path := strings.TrimPrefix(msg.Track.ID, "local:")
 			if p.plStore != nil {
-				lyricsJSON := p.plStore.GetSetting(manualLyricsOverrideKey(msg.Track.ID))
-				if lyricsJSON == "" {
-					lyricsJSON, _ = p.plStore.GetLocalFileLyrics(path)
-				}
 				var lr domain.LyricsResp
-				if lyricsJSON != "" && json.Unmarshal([]byte(lyricsJSON), &lr) == nil {
+				lyricsJSON, _ := p.plStore.GetLocalFileLyrics(path)
+				if lyricsJSON != "" {
+					_ = json.Unmarshal([]byte(lyricsJSON), &lr)
+				}
+				if saved := p.plStore.GetSetting(manualLyricsOverrideKey(msg.Track.ID)); saved != "" {
+					var manual domain.LyricsResp
+					if json.Unmarshal([]byte(saved), &manual) == nil {
+						lr, _ = mergeManualLyrics(lr, manual)
+					}
+				}
+				if len(lr.AllTracks) > 0 || len(lr.Synced) > 0 || lr.Plain != "" {
 					cmds = append(cmds, func() tea.Msg { return LocalLyricsLoadedMsg{Lyrics: lr, Gen: msg.Gen} })
 				} else {
 					cmds = append(cmds, func() tea.Msg {

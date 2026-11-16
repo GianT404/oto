@@ -164,7 +164,7 @@ func (c *HTTPProvider) Lyrics(ctx context.Context, id, title, artist string, dur
 			}
 			sources = append(sources, source)
 			lineCount += len(t.Lines)
-			lt := domain.LyricsTrack{Language: t.Language, TrackName: t.TrackName, ArtistName: t.ArtistName}
+			lt := domain.LyricsTrack{Language: t.Language, Source: source, TrackName: t.TrackName, ArtistName: t.ArtistName}
 			for _, line := range t.Lines {
 				lt.Synced = append(lt.Synced, domain.LyricLine{Time: line.Start, End: line.End, Text: line.Text})
 			}

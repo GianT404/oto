@@ -48,7 +48,7 @@ func (p *DirectProvider) SearchLyrics(ctx context.Context, query string, limit i
 	out := make([]domain.LyricsSearchResult, 0, len(results))
 	for _, result := range results {
 		lyrics := domain.LyricsTrack{
-			Language: "lrclib", Plain: result.Plain,
+			Language: "lrclib", Source: "lrclib", Plain: result.Plain,
 			TrackName: result.TrackName, ArtistName: result.ArtistName,
 		}
 		for _, line := range result.Synced {
@@ -110,18 +110,10 @@ func (p *DirectProvider) Lyrics(ctx context.Context, id, title, artist string, d
 		log.Printf("[lyrics] none for %s (%q) in %v", id, title, time.Since(start))
 		return lr, fmt.Errorf("không tìm thấy lyrics")
 	}
-	seen := make(map[string]bool)
-	var finalData []scraper.LyricsData
 	for _, d := range combined {
-		if !seen[d.Language] {
-			seen[d.Language] = true
-			finalData = append(finalData, d)
-		}
-	}
-
-	for _, d := range finalData {
 		lt := domain.LyricsTrack{
 			Language:   d.Language,
+			Source:     d.Source,
 			TrackName:  d.TrackName,
 			ArtistName: d.ArtistName,
 		}

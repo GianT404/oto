@@ -309,13 +309,18 @@ func (a *App) handleDataEvents(msg tea.Msg) tea.Cmd {
 			break
 		}
 		result := msg.Result
-		lr := manualLyricsResponse(msg.VideoID, result)
+		manual := manualLyricsResponse(msg.VideoID, result)
+		lr, _ := mergeManualLyrics(a.right.lyrics, manual)
+		a.right.SetPreferredIndex(0)
 		a.right.SetLyrics(lr)
 		if a.left.plStore != nil {
-			if raw, err := json.Marshal(lr); err == nil {
+			if raw, err := json.Marshal(manual); err == nil {
 				a.left.plStore.SetSetting(manualLyricsOverrideKey(msg.VideoID), string(raw))
 			}
+			a.left.plStore.SetSetting(lyricsSelectionSettingKey(msg.VideoID), "0")
+			a.left.plStore.SetSetting(lyricsLanguageSettingKey, manual.Language)
 		}
+		a.right.SetPreferredLanguage(manual.Language)
 		if len(a.modals) > 0 {
 			a.modals = a.modals[:len(a.modals)-1]
 		}

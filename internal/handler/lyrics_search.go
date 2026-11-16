@@ -60,7 +60,7 @@ func (h *LyricsSearchHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 	response := make([]domain.LyricsSearchResult, 0, len(results))
 	for _, result := range results {
 		lyrics := domain.LyricsTrack{
-			Language: "lrclib", Plain: result.Plain,
+			Language: "lrclib", Source: "lrclib", Plain: result.Plain,
 			TrackName: result.TrackName, ArtistName: result.ArtistName,
 		}
 		for _, line := range result.Synced {

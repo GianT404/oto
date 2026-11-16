@@ -65,6 +65,9 @@ func (r RightPanel) renderLangPopupHeight(innerW, lyrH int) string {
 
 	for i, t := range r.lyrics.AllTracks {
 		label := languageLabel(t.Language)
+		if t.Source != "" {
+			label += " · " + t.Source
+		}
 
 		cursor := " "
 		tick := " "
