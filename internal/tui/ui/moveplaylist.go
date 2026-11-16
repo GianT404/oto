@@ -129,14 +129,18 @@ func (m *MovePickModal) View() string {
 // 3. CONFIRM MOVE MODAL
 // ==========================================
 type MoveConfirmModal struct {
-	plName  string
-	count   int
-	addOnly bool
-	cursor  int
+	plName     string
+	count      int
+	addOnly    bool
+	removeOnly bool
+	cursor     int
 }
 
 func NewMoveConfirmModal(plName string, count int, addOnly bool) *MoveConfirmModal {
 	return &MoveConfirmModal{plName: plName, count: count, addOnly: addOnly, cursor: 1}
+}
+func NewRemoveConfirmModal(plName string, count int) *MoveConfirmModal {
+	return &MoveConfirmModal{plName: plName, count: count, removeOnly: true, cursor: 1}
 }
 func (m *MoveConfirmModal) Init() tea.Cmd { return nil }
 func (m *MoveConfirmModal) Update(msg tea.Msg) (Overlay, tea.Cmd) {
@@ -162,6 +166,8 @@ func (m *MoveConfirmModal) View() string {
 	action, title := "Move", "Confirm Move"
 	if m.addOnly {
 		action, title = "Add", "Confirm Add"
+	} else if m.removeOnly {
+		action, title = "Remove", "Confirm Remove"
 	}
 	trackLabel := "tracks"
 	if m.count == 1 {
@@ -170,7 +176,11 @@ func (m *MoveConfirmModal) View() string {
 
 	var b strings.Builder
 	b.WriteString("\n ")
-	b.WriteString(DimItemStyle.Render(fmt.Sprintf("%s %d %s to \"%s\"?", action, m.count, trackLabel, m.plName)))
+	prompt := fmt.Sprintf("%s %d %s to \"%s\"?", action, m.count, trackLabel, m.plName)
+	if m.removeOnly {
+		prompt = fmt.Sprintf("Remove %d %s from \"%s\"?", m.count, trackLabel, m.plName)
+	}
+	b.WriteString(DimItemStyle.Render(prompt))
 	b.WriteString("\n\n ")
 	cancelStyle, confirmStyle := NormalItemStyle, NormalItemStyle
 	if m.cursor == 0 {

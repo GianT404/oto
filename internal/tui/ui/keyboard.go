@@ -71,11 +71,27 @@ func (a *App) handleKeys(msg tea.KeyPressMsg) tea.Cmd {
 			}
 		}
 	case ".":
-		if a.moveSession != nil && a.sidebarActive == SideDownloads && !a.left.input.Focused() {
+		if a.moveSession != nil && !a.textInputFocused() &&
+			((a.moveSession.RemoveOnly && a.sidebarActive == SidePlaylists) ||
+				(!a.moveSession.RemoveOnly && a.sidebarActive == SideDownloads)) {
 			a.toggleMoveSelection()
 		}
 	case "i":
-		if a.moveSession != nil && a.sidebarActive == SideDownloads && !a.left.input.Focused() {
+		if a.moveSession != nil && a.moveSession.RemoveOnly && a.sidebarActive == SidePlaylists &&
+			a.left.activePlaylist != nil && a.moveSession.TargetPlIdx >= 0 &&
+			a.moveSession.TargetPlIdx < len(a.left.playlists) &&
+			a.left.playlists[a.moveSession.TargetPlIdx].ID == a.left.activePlaylist.ID && !a.textInputFocused() {
+			if a.selectedMoveCount() == 0 {
+				a.setStatus(StatusErrStyle.Render("X No tracks selected to remove"))
+			} else if a.moveSession.TargetPlIdx < 0 || a.moveSession.TargetPlIdx >= len(a.left.playlists) {
+				a.setStatus(StatusErrStyle.Render("X Playlist not found"))
+			} else {
+				plName := a.left.playlists[a.moveSession.TargetPlIdx].Name
+				modal := NewRemoveConfirmModal(plName, a.selectedMoveCount())
+				a.modals = []Overlay{modal}
+				cmds = append(cmds, modal.Init())
+			}
+		} else if a.moveSession != nil && !a.moveSession.RemoveOnly && a.sidebarActive == SideDownloads && !a.left.input.Focused() {
 			if a.selectedMoveCount() == 0 {
 				action := "move"
 				if a.moveSession.AddOnly {

@@ -121,73 +121,6 @@ func (m *CmdMenuModal) View() string {
 	return renderBox(40, "Commands", b.String(), themeCol("#e8593c"))
 }
 
-// ==========================================
-// 2. REMOVE FROM PLAYLIST MODAL
-// ==========================================
-type RemoveTrackModal struct {
-	idxs      []int
-	playlists []storage.Playlist
-	track     storage.PlaylistTrack
-	cursor    int
-}
-
-func NewRemoveTrackModal(idxs []int, playlists []storage.Playlist, track storage.PlaylistTrack) *RemoveTrackModal {
-	return &RemoveTrackModal{idxs: idxs, playlists: playlists, track: track, cursor: 0}
-}
-func (m *RemoveTrackModal) Init() tea.Cmd { return nil }
-func (m *RemoveTrackModal) Update(msg tea.Msg) (Overlay, tea.Cmd) {
-	if k, ok := msg.(tea.KeyPressMsg); ok {
-		switch k.String() {
-		case "esc", ":", "q":
-			return m, func() tea.Msg { return CloseModalMsg{} }
-		case "up", "k":
-			if m.cursor > 0 {
-				m.cursor--
-			} else {
-				m.cursor = len(m.idxs) - 1
-			}
-		case "down", "j":
-			if m.cursor < len(m.idxs)-1 {
-				m.cursor++
-			} else {
-				m.cursor = 0
-			}
-		case "enter":
-			if len(m.idxs) > 0 {
-				idx := m.idxs[m.cursor]
-				return m, tea.Batch(
-					func() tea.Msg { return CloseModalMsg{} },
-					func() tea.Msg { return ExecuteRemovePlMsg{PlIdx: idx, Track: m.track} },
-				)
-			}
-		}
-	}
-	return m, nil
-}
-func (m *RemoveTrackModal) View() string {
-	var b strings.Builder
-	b.WriteString("\n ")
-	b.WriteString(NormalItemStyle.Render("Remove \"" + m.track.Title + "\" from:"))
-	b.WriteString("\n\n ")
-	for i, plIdx := range m.idxs {
-		marker := "  "
-		if i == m.cursor {
-			marker = "▸ "
-		}
-		line := marker + m.playlists[plIdx].Name
-		if i == m.cursor {
-			pad := 51 - runewidth.StringWidth(line)
-			if pad < 0 {
-				pad = 0
-			}
-			b.WriteString(SelectedItemStyle.Render(line+strings.Repeat(" ", pad)) + "\n ")
-		} else {
-			b.WriteString(NormalItemStyle.Render(line) + "\n ")
-		}
-	}
-	return renderBox(56, "Remove from Playlist", b.String(), themeCol("#e8593c"))
-}
-
 // --- APP ROUTING CỦA LỆNH ---
 func (a *App) runCmdOption(opt string) tea.Cmd {
 	switch opt {
@@ -277,47 +210,16 @@ func (a *App) runCmdOption(opt string) tea.Cmd {
 		return modal.Init()
 	case "Remove from playlist":
 		if a.sidebarActive == SidePlaylists && a.left.activePlaylist != nil {
-			track, ok := a.selectedTrackForPlaylist()
-			if !ok {
-				a.setStatus(StatusErrStyle.Render("X No track selected"))
-				return nil
-			}
-
-			activeID := a.left.activePlaylist.ID
-			plIdx := -1
-
-			for i := range a.left.playlists {
-				if a.left.playlists[i].ID == activeID {
-					plIdx = i
-					break
-				}
-			}
-
+			plIdx := a.activePlaylistIndex()
 			if plIdx < 0 {
 				a.setStatus(StatusErrStyle.Render("X Active playlist not found"))
 				return nil
 			}
-
-			modal := NewRemoveTrackModal(
-				[]int{plIdx},
-				a.left.playlists,
-				track,
-			)
-
-			a.modals = append(a.modals, modal)
-			return modal.Init()
+			a.modals = nil
+			a.moveSession = &MoveSession{TargetPlIdx: plIdx, Selected: make(map[string]bool), RemoveOnly: true}
+			a.setStatus(StatusMsgStyle.Render("> Select tracks to remove from \"" + a.left.playlists[plIdx].Name + "\""))
+			return nil
 		}
-
-		track, ok := a.selectedTrackForPlaylist()
-		if ok {
-			if idxs := a.playlistsContainingSelected(); len(idxs) > 0 {
-				modal := NewRemoveTrackModal(idxs, a.left.playlists, track)
-				a.modals = append(a.modals, modal)
-				return modal.Init()
-			}
-		}
-
-		a.setStatus(StatusErrStyle.Render("X Track not in any playlist"))
 		return nil
 	}
 	return nil
@@ -434,33 +336,7 @@ func (a *App) cmdOptionList() []string {
 		}
 	}
 
-	opts := cmdOptions
-	if _, ok := a.selectedTrackForPlaylist(); ok &&
-		len(a.playlistsContainingSelected()) > 0 {
-		opts = append(
-			append([]string{}, cmdOptions...),
-			"Remove from playlist",
-		)
-	}
-
-	return opts
-}
-
-func (a *App) playlistsContainingSelected() []int {
-	track, ok := a.selectedTrackForPlaylist()
-	if !ok {
-		return nil
-	}
-	var idxs []int
-	for i, pl := range a.left.playlists {
-		for _, t := range pl.Tracks {
-			if t.Path == track.Path || "local:"+t.Path == track.ID || t.ID == track.ID {
-				idxs = append(idxs, i)
-				break
-			}
-		}
-	}
-	return idxs
+	return cmdOptions
 }
 
 func (a *App) selectedTrackForPlaylist() (storage.PlaylistTrack, bool) {

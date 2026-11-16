@@ -2,7 +2,6 @@ package ui
 
 import (
 	"oto/internal/domain"
-	"oto/internal/storage"
 )
 
 type SearchResultMsg struct {
@@ -98,11 +97,6 @@ type ExecuteMoveMsg struct{}
 
 type ExecuteCmdOptionMsg struct {
 	Option string
-}
-
-type ExecuteRemovePlMsg struct {
-	PlIdx int
-	Track storage.PlaylistTrack
 }
 
 type PlayNextMsg struct{}

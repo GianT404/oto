@@ -45,6 +45,7 @@ type MoveSession struct {
 	TargetPlIdx int
 	Selected    map[string]bool
 	AddOnly     bool
+	RemoveOnly  bool
 }
 
 type App struct {
@@ -148,8 +149,24 @@ func (a *App) selectedMoveCount() int {
 }
 
 func (a *App) toggleMoveSelection() {
+	if a.moveSession == nil {
+		return
+	}
+	if a.moveSession.RemoveOnly {
+		if a.sidebarActive != SidePlaylists || a.left.activePlaylist == nil || a.left.input.Focused() ||
+			a.moveSession.TargetPlIdx < 0 || a.moveSession.TargetPlIdx >= len(a.left.playlists) ||
+			a.left.playlists[a.moveSession.TargetPlIdx].ID != a.left.activePlaylist.ID {
+			return
+		}
+		tracks := a.left.getFilteredPlaylistTracks()
+		if a.left.plCursor >= 0 && a.left.plCursor < len(tracks) {
+			key := playlistTrackSelectionKey(tracks[a.left.plCursor])
+			a.moveSession.Selected[key] = !a.moveSession.Selected[key]
+		}
+		return
+	}
 	locals := a.left.getFilteredLocals()
-	if a.moveSession == nil || a.left.dlCursor < 0 || a.left.dlCursor >= len(locals) {
+	if a.left.dlCursor < 0 || a.left.dlCursor >= len(locals) {
 		return
 	}
 
@@ -169,6 +186,13 @@ func playlistTrackLocalPath(track storage.PlaylistTrack) string {
 		return strings.TrimPrefix(track.Path, "local:")
 	}
 	return strings.TrimPrefix(track.ID, "local:")
+}
+
+func playlistTrackSelectionKey(track storage.PlaylistTrack) string {
+	if track.ID != "" {
+		return track.ID
+	}
+	return track.Path
 }
 
 func playlistContainsLocalPath(playlist storage.Playlist, path string) bool {
@@ -261,6 +285,53 @@ func (a *App) applyMoveToPlaylist() {
 	}
 
 	a.setStatus(StatusOKStyle.Render(fmt.Sprintf("> Changed: %d added, %d removed in \"%s\"", added, removed, pl.Name)))
+}
+
+func (a *App) applyRemoveFromPlaylist() {
+	if a.moveSession == nil || a.moveSession.TargetPlIdx < 0 || a.moveSession.TargetPlIdx >= len(a.left.playlists) {
+		return
+	}
+	if a.left.plStore == nil {
+		a.setStatus(StatusErrStyle.Render("X Playlist storage is unavailable"))
+		return
+	}
+
+	pl := &a.left.playlists[a.moveSession.TargetPlIdx]
+	kept := make([]storage.PlaylistTrack, 0, len(pl.Tracks))
+	removed, failed := 0, 0
+	for _, track := range pl.Tracks {
+		if !a.moveSession.Selected[playlistTrackSelectionKey(track)] {
+			kept = append(kept, track)
+			continue
+		}
+		trackID := track.Path
+		if trackID == "" {
+			trackID = track.ID
+		}
+		if err := a.left.plStore.RemoveTrackFromPlaylist(pl.ID, trackID); err != nil {
+			kept = append(kept, track)
+			failed++
+			continue
+		}
+		removed++
+	}
+	pl.Tracks = kept
+	a.left.rebindActivePlaylist()
+
+	tracks := a.left.getFilteredPlaylistTracks()
+	if a.left.plCursor >= len(tracks) {
+		a.left.plCursor = maxInt(len(tracks)-1, 0)
+	}
+	a.left.scrollPlIntoView()
+	if failed > 0 {
+		a.setStatus(StatusErrStyle.Render(fmt.Sprintf("X Removed %d tracks; %d failed", removed, failed)))
+		return
+	}
+	trackLabel := "tracks"
+	if removed == 1 {
+		trackLabel = "track"
+	}
+	a.setStatus(StatusOKStyle.Render(fmt.Sprintf("> Removed %d %s from \"%s\"", removed, trackLabel, pl.Name)))
 }
 
 func (a *App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {

@@ -64,29 +64,6 @@ func TestApplyMoveToPlaylistUsesPathIDs(t *testing.T) {
 	}
 }
 
-func TestHandleDataEventsIgnoresInvalidPlaylistIndex(t *testing.T) {
-	db, err := storage.Open(t.TempDir())
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Cleanup(func() { db.Close() })
-
-	a := &App{
-		left: LeftPanel{
-			plStore:   db,
-			playlists: []storage.Playlist{{ID: "pl_test", Name: "Test"}},
-		},
-	}
-
-	defer func() {
-		if r := recover(); r != nil {
-			t.Fatalf("invalid playlist index panicked: %v", r)
-		}
-	}()
-
-	a.handleDataEvents(ExecuteRemovePlMsg{PlIdx: 99})
-}
-
 func TestHandleAudioEventsIgnoresInvalidPlaylistIndex(t *testing.T) {
 	a := &App{}
 

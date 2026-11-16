@@ -59,7 +59,7 @@ func (a *App) renderMainContent(layout tuilayout.UILayout) string {
 		var alreadyInMove map[string]bool
 		var selected map[string]bool
 		selectMode, addOnly := false, false
-		if a.moveSession != nil &&
+		if a.moveSession != nil && !a.moveSession.RemoveOnly &&
 			a.moveSession.TargetPlIdx >= 0 &&
 			a.moveSession.TargetPlIdx < len(a.left.playlists) {
 			selectMode = true
@@ -95,7 +95,15 @@ func (a *App) renderMainContent(layout tuilayout.UILayout) string {
 
 	case SidePlaylists:
 		a.left.SetSize(layout.TracklistWidth, contentH)
-		tracklistView := a.left.ViewPlaylistsContent(layout.TracklistWidth, contentH, playingID)
+		var selected map[string]bool
+		removeMode := a.moveSession != nil && a.moveSession.RemoveOnly &&
+			a.left.activePlaylist != nil && a.moveSession.TargetPlIdx >= 0 &&
+			a.moveSession.TargetPlIdx < len(a.left.playlists) &&
+			a.left.playlists[a.moveSession.TargetPlIdx].ID == a.left.activePlaylist.ID
+		if removeMode {
+			selected = a.moveSession.Selected
+		}
+		tracklistView := a.left.ViewPlaylistsContent(layout.TracklistWidth, contentH, playingID, selected, removeMode)
 		col3View := a.renderThirdColumn(layout.ThirdColumnWidth, contentH)
 		mainView = lipgloss.JoinHorizontal(lipgloss.Top, tracklistView, col3View)
 
@@ -219,7 +227,7 @@ func (a *App) otoRowHints() []globalHelpHint {
 			{text: StyleHint("r", "rescan")},
 		}
 	case SideDownloads:
-		if a.moveSession != nil {
+		if a.moveSession != nil && !a.moveSession.RemoveOnly {
 			plName := ""
 			if a.moveSession.TargetPlIdx >= 0 && a.moveSession.TargetPlIdx < len(a.left.playlists) {
 				plName = a.left.playlists[a.moveSession.TargetPlIdx].Name
@@ -248,6 +256,13 @@ func (a *App) otoRowHints() []globalHelpHint {
 	case SidePlaylists:
 		if a.left.showPlInput {
 			return nil
+		}
+		if a.moveSession != nil && a.moveSession.RemoveOnly {
+			return []globalHelpHint{
+				{text: StyleHint(".", "select/remove")},
+				{text: StyleHint("i", fmt.Sprintf("remove %d tracks", a.selectedMoveCount()))},
+				{text: StyleHint("esc", "cancel")},
+			}
 		}
 		return []globalHelpHint{
 			{text: StyleHint(",", "new playlist")},
@@ -298,11 +313,6 @@ func (a *App) renderOverlayView(view string) string {
 			hints = StyleHint("↑/↓", "navigate") + "  " + StyleHint("enter", "select") + "  " + StyleHint("esc", "cancel")
 			if a.mouseEnabled {
 				hints += "  " + StyleHint("click", "select") + "  " + StyleHint("double-click", "open")
-			}
-		case *RemoveTrackModal:
-			hints = StyleHint("↑/↓", "navigate") + "  " + StyleHint("enter", "remove") + "  " + StyleHint("esc", "back")
-			if a.mouseEnabled {
-				hints += "  " + StyleHint("click", "select") + "  " + StyleHint("double-click", "remove")
 			}
 		case *RenameModal, *RenamePlaylistModal:
 			hints = StyleHint("enter", "rename") + "  " + StyleHint("esc", "cancel")

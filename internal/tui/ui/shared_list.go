@@ -20,6 +20,7 @@ func renderSharedTrackList[T any](
 	selectMode bool,
 	showCheckColumn bool,
 	addOnly bool,
+	removeOnly bool,
 	selected map[string]bool,
 	alreadyIn map[string]bool,
 ) string {
@@ -54,6 +55,10 @@ func renderSharedTrackList[T any](
 		tick := ""
 		if selectMode {
 			switch {
+			case removeOnly && selected[path]:
+				tick = "[x] "
+			case removeOnly:
+				tick = "[ ] "
 			case addOnly && alreadyIn[path]:
 				tick = "[✓] "
 			case alreadyIn[path] != selected[path]:

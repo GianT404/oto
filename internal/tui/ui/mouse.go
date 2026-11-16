@@ -96,12 +96,6 @@ func (a *App) handleModalMouseClick(modal Overlay, click tea.MouseClickMsg) tea.
 		if idx >= 0 {
 			m.cursor = idx
 		}
-	case *RemoveTrackModal:
-		boxW, rowOffset, count = 56, 4, len(m.idxs)
-		idx = modalClickRow(click, a.width, a.height, boxW, lipgloss.Height(m.View()), rowOffset, count)
-		if idx >= 0 {
-			m.cursor = idx
-		}
 	case *SettingsModal:
 		if click.Button != tea.MouseLeft || len(m.items) == 0 {
 			break

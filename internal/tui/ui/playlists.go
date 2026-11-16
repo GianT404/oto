@@ -61,7 +61,7 @@ func (p LeftPanel) getFilteredPlaylistTracks() []storage.PlaylistTrack {
 	return filtered
 }
 
-func (p LeftPanel) ViewPlaylistsContent(w, h int, playingID string) string {
+func (p LeftPanel) ViewPlaylistsContent(w, h int, playingID string, selected map[string]bool, removeMode bool) string {
 	innerW := w - 2
 
 	var listContent string
@@ -70,9 +70,12 @@ func (p LeftPanel) ViewPlaylistsContent(w, h int, playingID string) string {
 	if p.activePlaylist != nil {
 		filtered := p.getFilteredPlaylistTracks()
 		title = fmt.Sprintf("Playlist: %s (%d)", p.activePlaylist.Name, len(filtered))
+		if removeMode {
+			title += fmt.Sprintf(" - %d selected", countSelected(selected))
+		}
 		listContent = lipgloss.NewStyle().
 			PaddingLeft(1).
-			Render(p.renderPlaylistDetail(innerW, filtered, playingID, w, h))
+			Render(p.renderPlaylistDetail(innerW, filtered, playingID, w, h, selected, removeMode))
 	} else {
 		filtered := p.getFilteredPlaylists()
 		title = fmt.Sprintf("Playlists (%d)", len(filtered))
@@ -213,7 +216,7 @@ func (p LeftPanel) renderPlaylistList(
 	return b.String()
 }
 
-func (p LeftPanel) renderPlaylistDetail(innerW int, filtered []storage.PlaylistTrack, playingID string, w, h int) string {
+func (p LeftPanel) renderPlaylistDetail(innerW int, filtered []storage.PlaylistTrack, playingID string, w, h int, selected map[string]bool, removeMode bool) string {
 	if len(filtered) == 0 {
 		if len(p.activePlaylist.Tracks) == 0 {
 			return lipgloss.Place(
@@ -244,9 +247,9 @@ func (p LeftPanel) renderPlaylistDetail(innerW int, filtered []storage.PlaylistT
 				}
 			}
 
-			return t.Title, t.Artist, t.Path, t.Duration, false, isPlaying, origIdx
+			return t.Title, t.Artist, playlistTrackSelectionKey(t), t.Duration, false, isPlaying, origIdx
 		},
-		false, false, false, nil, nil,
+		removeMode, false, false, true, selected, nil,
 	)
 }
 
