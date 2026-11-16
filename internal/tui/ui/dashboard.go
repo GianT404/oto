@@ -49,7 +49,7 @@ func renderDashboard(hide bool, vol float64, speedIdx int, presetIdx int, nowPla
 	}
 	brStr := StyleHint("BR", bitrateStr)
 
-	leftColStyle := lipgloss.NewStyle().Width(14)
+	leftColStyle := lipgloss.NewStyle().Width(15)
 
 	row1 := " " + leftColStyle.Render(volStr) + spdStr
 	row2 := " " + leftColStyle.Render(eqStr) + brStr
