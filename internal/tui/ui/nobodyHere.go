@@ -13,9 +13,18 @@ type VersionModal struct {
 	height  int
 }
 
+const serverArt = " ▄██████▄      ███      ▄██████▄\n" +
+	"███    ███ ▀█████████▄ ███    ███\n" +
+	"███    ███    ▀███▀▀██ ███    ███\n" +
+	"███    ███     ███   ▀ ███    ███\n" +
+	"███    ███     ███     ███    ███\n" +
+	"███    ███     ███     ███    ███\n" +
+	"███    ███     ███     ███    ███\n" +
+	" ▀██████▀     ▄████▀    ▀██████▀"
+
 func NewVersionModal(version string, width, height int) *VersionModal {
 	if strings.TrimSpace(version) == "" {
-		version = "dev"
+			return &VersionModal{version: version, width: width, height: height}
 	}
 	return &VersionModal{version: version, width: width, height: height}
 }
@@ -41,14 +50,21 @@ func (m *VersionModal) Update(msg tea.Msg) (Overlay, tea.Cmd) {
 }
 
 func (m *VersionModal) View() string {
+	logoStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("#E8593C"))
 	madeByStyle := lipgloss.NewStyle().
 		Foreground(lipgloss.Color("#FFFFFF"))
 	versionStyle := lipgloss.NewStyle().
 		Foreground(lipgloss.Color("#888888")).
 		Faint(true)
+	content := lipgloss.JoinVertical(
+		lipgloss.Center,
+		logoStyle.Render(serverArt),
+		"",
+		madeByStyle.Render("Made by ミＧＩＡＮ4０４シ"),
+	)
 
 	if m.width <= 0 || m.height <= 0 {
-		return madeByStyle.Render("Made by ミＧＩＡＮ4０４シ") + "\n" + versionStyle.Render(m.version)
+		return content + "\n" + versionStyle.Render(m.version)
 	}
 
 	rows := strings.Split(lipgloss.Place(
@@ -56,7 +72,7 @@ func (m *VersionModal) View() string {
 		m.height,
 		lipgloss.Center,
 		lipgloss.Center,
-		madeByStyle.Render("Made by ミＧＩＡＮ4０４シ"),
+		content,
 	), "\n")
 	rows[m.height-1] = lipgloss.Place(
 		m.width,
