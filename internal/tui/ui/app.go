@@ -104,6 +104,10 @@ type Overlay interface {
 const maxPendingKeys = 64
 const lyricsLanguageSettingKey = "lyrics_language"
 
+func lyricsSelectionSettingKey(trackID string) string {
+	return "lyrics_selection:" + trackID
+}
+
 func NewApp(provider domain.MusicProvider, downloadDir string) *App {
 	mi := textinput.New()
 	mi.CharLimit = 50

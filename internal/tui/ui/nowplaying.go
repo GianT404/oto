@@ -38,13 +38,14 @@ type RightPanel struct {
 	highlightLine     int
 	manualSelect      bool
 	preferredLanguage string
+	preferredIndex    int
 }
 
 func NewRightPanel(p *player.Player) RightPanel {
 	sp := spinner.New()
 	sp.Spinner = spinner.Dot
 	sp.Style = StatusMsgStyle
-	return RightPanel{player: p, spinner: sp}
+	return RightPanel{player: p, spinner: sp, preferredIndex: -1}
 }
 
 func (r *RightPanel) SetSize(w, h int) { r.width = w; r.height = h }
@@ -78,8 +79,19 @@ func (r *RightPanel) SetPreferredLanguage(language string) {
 	r.preferredLanguage = strings.TrimSpace(language)
 }
 
+func (r *RightPanel) SetPreferredIndex(index int) {
+	r.preferredIndex = index
+}
+
 func (r *RightPanel) applyPreferredLanguage() {
-	if r.preferredLanguage == "" || len(r.lyrics.AllTracks) == 0 {
+	if len(r.lyrics.AllTracks) == 0 {
+		return
+	}
+	if r.preferredIndex >= 0 && r.preferredIndex < len(r.lyrics.AllTracks) {
+		r.lyrics.SelectLanguage(r.preferredIndex)
+		return
+	}
+	if r.preferredLanguage == "" {
 		return
 	}
 
@@ -120,8 +132,13 @@ func (r RightPanel) Update(msg tea.Msg, focused bool, allowLanguagePopup bool) (
 				r.syncSyncedLine(true)
 				r.showLangPopup = false
 				selectedLanguage := r.lyrics.Language
+				selectedIndex := r.langCursor
+				trackID := ""
+				if r.nowPlay != nil {
+					trackID = r.nowPlay.ID
+				}
 				return r, func() tea.Msg {
-					return LyricsLanguageSelectedMsg{Language: selectedLanguage}
+					return LyricsLanguageSelectedMsg{Language: selectedLanguage, TrackID: trackID, Index: selectedIndex}
 				}
 			case "l", "esc":
 				r.showLangPopup = false

@@ -168,6 +168,12 @@ func (a *App) handleAudioEvents(msg tea.Msg) tea.Cmd {
 			break
 		}
 		t := msg.Track
+		a.right.SetPreferredIndex(-1)
+		if a.left.plStore != nil && t.ID != "" {
+			if index, err := strconv.Atoi(a.left.plStore.GetSetting(lyricsSelectionSettingKey(t.ID))); err == nil {
+				a.right.SetPreferredIndex(index)
+			}
+		}
 		if msg.IsLocal {
 			a.setStatus(StatusOKStyle.Render(">  " + t.Title))
 		}
@@ -321,8 +327,13 @@ func (a *App) handleDataEvents(msg tea.Msg) tea.Cmd {
 
 	case LyricsLanguageSelectedMsg:
 		a.right.SetPreferredLanguage(msg.Language)
-		if a.left.plStore != nil && msg.Language != "" {
-			a.left.plStore.SetSetting(lyricsLanguageSettingKey, msg.Language)
+		if a.left.plStore != nil {
+			if msg.Language != "" {
+				a.left.plStore.SetSetting(lyricsLanguageSettingKey, msg.Language)
+			}
+			if msg.TrackID != "" && msg.Index >= 0 {
+				a.left.plStore.SetSetting(lyricsSelectionSettingKey(msg.TrackID), strconv.Itoa(msg.Index))
+			}
 		}
 	case NobodyHereMsg:
 		modal := NewVersionModal(a.version, a.width, a.height)

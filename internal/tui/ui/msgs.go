@@ -14,6 +14,8 @@ type SearchResultMsg struct {
 
 type LyricsLanguageSelectedMsg struct {
 	Language string
+	TrackID  string
+	Index    int
 }
 
 type PinStatusMsg struct {
