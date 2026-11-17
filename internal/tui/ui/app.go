@@ -49,34 +49,35 @@ type MoveSession struct {
 }
 
 type App struct {
-	provider            domain.MusicProvider
-	downloadDir         string
-	player              *player.Player
-	playback            *PlaybackManager
-	width               int
-	height              int
-	left                LeftPanel
-	right               RightPanel
-	statusMsg           string
-	statusAt            time.Time
-	sessionStart        time.Time
-	sidebarActive       SidebarItem
-	logOffset           int
-	activeContext       SidebarItem
-	playingPlaylistName string
-	palette             CommandPalette
-	booting             bool
-	splashFrame         int
-	animeFrame          int
-	animeActive         bool
-	pendingKeys         []tea.KeyPressMsg
-	playbackTickActive  bool
-	modals              []Overlay
-	hideHint            bool
-	hideLogo            bool
-	mouseEnabled        bool
-	skipSilence         bool
-	version             string
+	provider               domain.MusicProvider
+	downloadDir            string
+	player                 *player.Player
+	playback               *PlaybackManager
+	width                  int
+	height                 int
+	left                   LeftPanel
+	right                  RightPanel
+	statusMsg              string
+	statusAt               time.Time
+	sessionStart           time.Time
+	sidebarActive          SidebarItem
+	logOffset              int
+	activeContext          SidebarItem
+	playingPlaylistName    string
+	palette                CommandPalette
+	booting                bool
+	splashFrame            int
+	animeFrame             int
+	animeActive            bool
+	pendingKeys            []tea.KeyPressMsg
+	playbackTickActive     bool
+	modals                 []Overlay
+	hideHint               bool
+	hideLogo               bool
+	lyricAnimationDisabled bool
+	mouseEnabled           bool
+	skipSilence            bool
+	version                string
 
 	mouseLastClickAt  time.Time
 	mouseLastClickY   int
@@ -749,7 +750,8 @@ func (a *App) syncAnimeAnimation() tea.Cmd {
 			a.sidebarActive == SidePlaylists
 
 	shouldAnimate :=
-		a.right.loaded &&
+		!a.lyricAnimationDisabled &&
+			a.right.loaded &&
 			!a.right.loadingLyrics &&
 			a.right.noLyrics &&
 			(a.sidebarActive == SideLyrics || thirdColumnVisible)

@@ -147,6 +147,7 @@ type ApplySettingMsg struct {
 	Index int
 	Value bool
 }
+
 type MetaSavedMsg struct {
 	Path  string
 	Track domain.Track

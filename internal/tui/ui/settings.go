@@ -29,6 +29,7 @@ func (a *App) settingOptions() []settingOpt {
 		themeOption(),
 		mouseOption(),
 		skipSilenceOption(),
+		lyricAnimationOption(),
 	}
 }
 
@@ -38,6 +39,31 @@ func (a *App) loadSettings() {
 	loadThemeSetting(a)
 	loadMouseSetting(a)
 	loadSkipSilenceSetting(a)
+	loadLyricAnimationSetting(a)
+}
+
+const lyricAnimationSettingKey = "lyric_animation_disabled"
+
+func lyricAnimationOption() settingOpt {
+	return settingOpt{
+		title: "Lyric animation",
+		desc:  "Animate lyric changes and the no-lyrics screen",
+		on:    func(a *App) bool { return !a.lyricAnimationDisabled },
+		apply: func(a *App, on bool) {
+			a.lyricAnimationDisabled = !on
+			if a.left.plStore != nil {
+				value := "0"
+				if a.lyricAnimationDisabled {
+					value = "1"
+				}
+				a.left.plStore.SetSetting(lyricAnimationSettingKey, value)
+			}
+		},
+	}
+}
+
+func loadLyricAnimationSetting(a *App) {
+	a.lyricAnimationDisabled = a.left.plStore != nil && a.left.plStore.GetSetting(lyricAnimationSettingKey) == "1"
 }
 
 func (a *App) settingSwitches() []Switch {

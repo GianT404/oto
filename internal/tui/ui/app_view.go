@@ -570,11 +570,18 @@ func (a *App) renderThirdColumn(w, h int) string {
 }
 
 func (a *App) renderLyricAnim(innerW, innerH, frame int) string {
+	if a.lyricAnimationDisabled {
+		if a.right.noLyrics {
+			return lipgloss.Place(innerW, innerH, lipgloss.Center, lipgloss.Center, DimItemStyle.Render("No lyrics available"))
+		}
+		line := LyricHighlightStyle.Width(innerW).Align(lipgloss.Center).Render(a.currLyric)
+		return lipgloss.Place(innerW, innerH, lipgloss.Center, lipgloss.Center, line)
+	}
 	if a.right.noLyrics {
 		return renderNoLyricsContent(innerW, innerH, frame)
 	}
 
-	progress := float64(time.Since(a.lyricAnimStart)) / float64(200*time.Millisecond)
+	progress := float64(time.Since(a.lyricAnimStart)) / float64(135*time.Millisecond)
 	return render.LyricAnimation(
 		a.prevLyric,
 		a.currLyric,
