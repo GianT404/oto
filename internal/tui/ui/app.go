@@ -750,8 +750,7 @@ func (a *App) syncAnimeAnimation() tea.Cmd {
 			a.sidebarActive == SidePlaylists
 
 	shouldAnimate :=
-		!a.lyricAnimationDisabled &&
-			a.right.loaded &&
+		a.right.loaded &&
 			!a.right.loadingLyrics &&
 			a.right.noLyrics &&
 			(a.sidebarActive == SideLyrics || thirdColumnVisible)

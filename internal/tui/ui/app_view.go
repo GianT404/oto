@@ -467,9 +467,13 @@ func (a *App) renderLyricsView(w, h, frame int) string {
 func (a *App) renderFullscreenLyrics() string {
 	innerW := maxInt(a.width, 1)
 	innerH := maxInt(a.height, 1)
-	content := a.renderLyricAnim(innerW, innerH, a.animeFrame)
-	if a.playback == nil || a.playback.NowPlay == nil {
+	var content string
+	if a.right.showLangPopup {
+		content = a.right.renderLangPopupHeight(innerW, innerH)
+	} else if a.playback == nil || a.playback.NowPlay == nil {
 		content = lipgloss.Place(innerW, innerH, lipgloss.Center, lipgloss.Center, DimItemStyle.Render("Play a track to see lyrics..."))
+	} else {
+		content = a.renderLyricAnim(innerW, innerH, a.animeFrame)
 	}
 	return lipgloss.Place(innerW, innerH, lipgloss.Center, lipgloss.Center, content)
 }
@@ -537,6 +541,7 @@ func (a *App) renderThirdColumn(w, h int) string {
 		lyricContent,
 		themeCol("#7c7986"),
 	)
+	lyricBox = lipgloss.NewStyle().MaxHeight(layout.LyricsHeight).Render(lyricBox)
 
 	duration := time.Since(a.sessionStart)
 	hTime := int(duration.Hours())
@@ -570,15 +575,12 @@ func (a *App) renderThirdColumn(w, h int) string {
 }
 
 func (a *App) renderLyricAnim(innerW, innerH, frame int) string {
-	if a.lyricAnimationDisabled {
-		if a.right.noLyrics {
-			return lipgloss.Place(innerW, innerH, lipgloss.Center, lipgloss.Center, DimItemStyle.Render("No lyrics available"))
-		}
-		line := LyricHighlightStyle.Width(innerW).Align(lipgloss.Center).Render(a.currLyric)
-		return lipgloss.Place(innerW, innerH, lipgloss.Center, lipgloss.Center, line)
-	}
 	if a.right.noLyrics {
 		return renderNoLyricsContent(innerW, innerH, frame)
+	}
+	if a.lyricAnimationDisabled {
+		line := LyricHighlightStyle.Width(innerW).Align(lipgloss.Center).Render(a.currLyric)
+		return lipgloss.Place(innerW, innerH, lipgloss.Center, lipgloss.Center, line)
 	}
 
 	progress := float64(time.Since(a.lyricAnimStart)) / float64(135*time.Millisecond)

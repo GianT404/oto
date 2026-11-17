@@ -256,7 +256,7 @@ func (r RightPanel) renderLyrics(innerW int, frame int) string {
 		return strings.TrimSuffix(b.String(), "\n")
 	}
 
-	if r.lyrics.Plain != "" {
+	if strings.TrimSpace(r.lyrics.Plain) != "" {
 		plainWrapped := LyricNormalStyle.Width(innerW).Render(
 			strings.ReplaceAll(r.lyrics.Plain, "\r\n", "\n"),
 		)
