@@ -51,6 +51,20 @@ type gaplessReader struct {
 	pipe   io.ReadCloser
 }
 
+type startClockReader struct {
+	io.ReadCloser
+	onStart func()
+	once    sync.Once
+}
+
+func (r *startClockReader) Read(p []byte) (int, error) {
+	n, err := r.ReadCloser.Read(p)
+	if n > 0 {
+		r.once.Do(r.onStart)
+	}
+	return n, err
+}
+
 func (r *gaplessReader) Read(p []byte) (n int, err error) {
 	if r.offset < len(r.buf) {
 		n = copy(p, r.buf[r.offset:])
@@ -68,23 +82,24 @@ func (r *gaplessReader) Close() error {
 }
 
 type Player struct {
-	mu          sync.Mutex
-	state       State
-	otoCtx      *oto.Context
-	player      *oto.Player
-	decoder     *exec.Cmd
-	currentPath string
-	headers     map[string]string
-	startTime   time.Time
-	pauseOffset time.Duration
-	lastErr     error
-	stopped     bool
-	stderrBuf   syncBuffer
-	volume      float64
-	generation  uint64
-	audioFilter string
-	speed       float64
-	skipSilence bool
+	mu           sync.Mutex
+	state        State
+	otoCtx       *oto.Context
+	player       *oto.Player
+	decoder      *exec.Cmd
+	currentPath  string
+	headers      map[string]string
+	startTime    time.Time
+	pauseOffset  time.Duration
+	clockStarted bool
+	lastErr      error
+	stopped      bool
+	stderrBuf    syncBuffer
+	volume       float64
+	generation   uint64
+	audioFilter  string
+	speed        float64
+	skipSilence  bool
 
 	// Gapless playback: pre-decoded next track.
 	nextCmd   *exec.Cmd
@@ -157,6 +172,9 @@ func (p *Player) Position() time.Duration {
 	}
 	switch p.state {
 	case Playing:
+		if !p.clockStarted {
+			return p.pauseOffset
+		}
 		return time.Duration(float64(time.Since(p.startTime)) * speed)
 	case Paused:
 		return p.pauseOffset
@@ -205,8 +223,9 @@ func (p *Player) playFromLocked(filePath string, startSec float64, headers map[s
 
 	p.currentPath = filePath
 	p.headers = headers
-	p.startTime = time.Now().Add(-time.Duration((startSec / speed) * float64(time.Second)))
-	p.pauseOffset = 0
+	p.startTime = time.Time{}
+	p.pauseOffset = time.Duration(startSec * float64(time.Second))
+	p.clockStarted = false
 	p.lastErr = nil
 	p.stopped = false
 	p.generation++
@@ -227,7 +246,9 @@ func (p *Player) playFromLocked(filePath string, startSec float64, headers map[s
 		return fmt.Errorf("ffmpeg start error: %w", err)
 	}
 
-	p.player = p.otoCtx.NewPlayer(pcmOut)
+	gen := p.generation
+	reader := &startClockReader{ReadCloser: pcmOut, onStart: func() { p.startPlaybackClock(gen) }}
+	p.player = p.otoCtx.NewPlayer(reader)
 	p.player.SetVolume(p.volume)
 
 	p.player.Play()
@@ -267,6 +288,20 @@ func (p *Player) playFromLocked(filePath string, startSec float64, headers map[s
 	}(p.decoder, p.generation, p.player)
 
 	return nil
+}
+
+func (p *Player) startPlaybackClock(gen uint64) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	if p.generation != gen || p.state != Playing || p.clockStarted {
+		return
+	}
+	speed := p.speed
+	if speed <= 0 {
+		speed = 1
+	}
+	p.startTime = time.Now().Add(-time.Duration(float64(p.pauseOffset) / speed))
+	p.clockStarted = true
 }
 
 func (p *Player) Stop() {
@@ -310,12 +345,16 @@ func (p *Player) TogglePause() {
 	}
 	if p.state == Playing {
 		p.player.Pause()
+		if p.clockStarted {
+			p.pauseOffset = time.Duration(float64(time.Since(p.startTime)) * speed)
+		}
 		p.state = Paused
-		p.pauseOffset = time.Duration(float64(time.Since(p.startTime)) * speed)
 	} else if p.state == Paused {
 		p.player.Play()
+		if p.clockStarted {
+			p.startTime = time.Now().Add(-time.Duration(float64(p.pauseOffset) / speed))
+		}
 		p.state = Playing
-		p.startTime = time.Now().Add(-time.Duration(float64(p.pauseOffset) / speed))
 	}
 }
 
@@ -333,6 +372,8 @@ func (p *Player) SeekBy(seconds float64) {
 	}
 	var elapsed float64
 	if p.state == Paused {
+		elapsed = p.pauseOffset.Seconds()
+	} else if !p.clockStarted {
 		elapsed = p.pauseOffset.Seconds()
 	} else {
 		elapsed = time.Since(p.startTime).Seconds() * speed
@@ -537,14 +578,19 @@ func (p *Player) PlayFromBuffer() bool {
 
 	p.currentPath = nextPath
 	p.headers = nil
-	p.startTime = time.Now()
+	p.startTime = time.Time{}
 	p.pauseOffset = 0
+	p.clockStarted = false
 	p.lastErr = nil
 	p.stopped = false
 	p.generation++
 	p.decoder = cmd
 
-	reader := &gaplessReader{buf: buf, pipe: pipe}
+	gen := p.generation
+	reader := &startClockReader{
+		ReadCloser: &gaplessReader{buf: buf, pipe: pipe},
+		onStart:    func() { p.startPlaybackClock(gen) },
+	}
 
 	p.player = p.otoCtx.NewPlayer(reader)
 	p.player.SetVolume(p.volume)
