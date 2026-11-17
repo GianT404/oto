@@ -464,6 +464,16 @@ func (a *App) renderLyricsView(w, h, frame int) string {
 	return lipgloss.NewStyle().Width(w).Render(lyricsBox)
 }
 
+func (a *App) renderFullscreenLyrics() string {
+	innerW := maxInt(a.width, 1)
+	innerH := maxInt(a.height, 1)
+	content := a.renderLyricAnim(innerW, innerH, a.animeFrame)
+	if a.playback == nil || a.playback.NowPlay == nil {
+		content = lipgloss.Place(innerW, innerH, lipgloss.Center, lipgloss.Center, DimItemStyle.Render("Play a track to see lyrics..."))
+	}
+	return lipgloss.Place(innerW, innerH, lipgloss.Center, lipgloss.Center, content)
+}
+
 func (a *App) renderProgressBar(w int) string {
 	elapsedSec := 0
 	totalSec := 0

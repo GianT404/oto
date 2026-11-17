@@ -124,6 +124,10 @@ func (m *CmdMenuModal) View() string {
 // --- APP ROUTING CỦA LỆNH ---
 func (a *App) runCmdOption(opt string) tea.Cmd {
 	switch opt {
+	case "Full screen":
+		modal := NewLyricsFullscreenModal(a)
+		a.modals = []Overlay{modal}
+		return modal.Init()
 	case "Audio settings":
 		modal := NewPresetModal(a.activePreset)
 		a.modals = append(a.modals, modal)
@@ -311,6 +315,10 @@ func (a *App) activePlaylistIndex() int {
 }
 
 func (a *App) cmdOptionList() []string {
+	if a.sidebarActive == SideLyrics {
+		return []string{"Full screen"}
+	}
+
 	if a.sidebarActive == SideSearch ||
 		a.sidebarActive == SideQueue ||
 		a.sidebarActive == SideImport {

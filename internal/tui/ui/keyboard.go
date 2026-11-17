@@ -125,7 +125,7 @@ func (a *App) handleKeys(msg tea.KeyPressMsg) tea.Cmd {
 		if a.textInputFocused() {
 			break
 		}
-		if a.sidebarActive == SideLyrics || a.sidebarActive == SideLogs {
+		if a.sidebarActive == SideLogs {
 			break
 		}
 		modal := NewCmdMenuModal(a.cmdOptionList())

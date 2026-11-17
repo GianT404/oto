@@ -437,6 +437,11 @@ func (a *App) updateModal(msg tea.Msg) (tea.Cmd, bool) {
 	}
 
 	top := len(a.modals) - 1
+	if _, ok := a.modals[top].(*LyricsFullscreenModal); ok {
+		if key, ok := msg.(tea.KeyPressMsg); ok && key.String() != "esc" && key.String() != "q" {
+			return nil, false
+		}
+	}
 	if click, ok := msg.(tea.MouseClickMsg); ok && a.mouseEnabled {
 		if modal, ok := a.modals[top].(*RenameModal); ok && modal.renaming {
 			return nil, true
