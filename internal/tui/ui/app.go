@@ -671,10 +671,13 @@ func (a *App) updateSystem(msg tea.Msg) ([]tea.Cmd, bool, bool) {
 		oldTab := a.sidebarActive
 		visualizerEscape := a.palette.Visible() && msg.String() == "esc"
 		reorderEnter := a.moveSession != nil && a.moveSession.ReorderOnly && msg.String() == "enter"
+		playlistSessionEscape := a.sidebarActive == SidePlaylists && a.moveSession != nil &&
+			(a.moveSession.RemoveOnly || a.moveSession.ReorderOnly) && msg.String() == "esc" &&
+			!(a.moveSession.ReorderOnly && a.left.input.Focused())
 		if c := a.handleKeys(msg); c != nil {
 			cmds = append(cmds, c)
 		}
-		return cmds, true, oldTab != a.sidebarActive || visualizerEscape || reorderEnter
+		return cmds, true, oldTab != a.sidebarActive || visualizerEscape || reorderEnter || playlistSessionEscape
 	default:
 		return cmds, false, false
 	}
