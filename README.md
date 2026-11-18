@@ -131,7 +131,6 @@ npx expo start
 | `l`                           | Choose lyrics language                                                                                   |
 | `pgup` / `pgdown`             | Scroll lyrics                                                                                            |
 | `d`                           | Download selected track                                                                                  |
-| `Delete`                      | Remove playlist                                                                                          |
 | `Esc`                         | Settings popup                                                                                           |
 | `alt+q`                       | Quit                                                                                                     |
 

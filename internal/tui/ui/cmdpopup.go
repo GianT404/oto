@@ -72,6 +72,12 @@ type DeleteDoneMsg struct {
 	Err  error
 }
 
+type PlaylistDeleteDoneMsg struct {
+	ID   string
+	Name string
+	Err  error
+}
+
 func NewCmdMenuModal(options []string) *CmdMenuModal {
 	return &CmdMenuModal{options: options, cursor: 0}
 }
@@ -170,6 +176,19 @@ func (a *App) runCmdOption(opt string) tea.Cmd {
 			a.width,
 		)
 
+		a.modals = append(a.modals, modal)
+		return modal.Init()
+	case "Delete playlist":
+		target, ok := a.selectedPlaylist()
+		if !ok {
+			a.setStatus(StatusErrStyle.Render("X No playlist selected"))
+			return nil
+		}
+		if a.left.plStore == nil {
+			a.setStatus(StatusErrStyle.Render("X Playlist storage is unavailable"))
+			return nil
+		}
+		modal := NewDeletePlaylistModal(target, a.left.plStore)
 		a.modals = append(a.modals, modal)
 		return modal.Init()
 	case "Playback speed":
@@ -350,6 +369,7 @@ func (a *App) cmdOptionList() []string {
 		if a.left.activePlaylist == nil {
 			return []string{
 				"Rename playlist",
+				"Delete playlist",
 			}
 		}
 
@@ -541,5 +561,14 @@ func deleteCmd(plStore *storage.DB, path, name string) tea.Cmd {
 
 		log.Printf("[library] delete track completed path=%q title=%q", path, name)
 		return DeleteDoneMsg{Path: path, Name: name}
+	}
+}
+
+func deletePlaylistCmd(plStore *storage.DB, id, name string) tea.Cmd {
+	return func() tea.Msg {
+		if err := plStore.DeletePlaylist(id); err != nil {
+			return PlaylistDeleteDoneMsg{ID: id, Name: name, Err: err}
+		}
+		return PlaylistDeleteDoneMsg{ID: id, Name: name}
 	}
 }

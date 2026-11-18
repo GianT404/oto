@@ -15,6 +15,53 @@ type DeleteModal struct {
 	cursor  int
 }
 
+type DeletePlaylistModal struct {
+	playlist storage.Playlist
+	plStore  *storage.DB
+	cursor   int
+}
+
+func NewDeletePlaylistModal(playlist storage.Playlist, plStore *storage.DB) *DeletePlaylistModal {
+	return &DeletePlaylistModal{playlist: playlist, plStore: plStore}
+}
+
+func (m *DeletePlaylistModal) Init() tea.Cmd { return nil }
+
+func (m *DeletePlaylistModal) Update(msg tea.Msg) (Overlay, tea.Cmd) {
+	if k, ok := msg.(tea.KeyPressMsg); ok {
+		switch k.String() {
+		case "esc", ":", "q":
+			return m, func() tea.Msg { return CloseAllModalsMsg{} }
+		case "left", "h", "right", "l", "up", "down", "k", "j", "tab":
+			m.cursor = 1 - m.cursor
+		case "enter":
+			if m.cursor == 1 {
+				return m, tea.Batch(
+					func() tea.Msg { return CloseAllModalsMsg{} },
+					deletePlaylistCmd(m.plStore, m.playlist.ID, m.playlist.Name),
+				)
+			}
+			return m, func() tea.Msg { return CloseAllModalsMsg{} }
+		}
+	}
+	return m, nil
+}
+
+func (m *DeletePlaylistModal) View() string {
+	var b strings.Builder
+	b.WriteString("\n ")
+	b.WriteString(DimItemStyle.Render("Delete playlist \"" + m.playlist.Name + "\" permanently?"))
+	b.WriteString("\n\n ")
+	cancelStyle, confirmStyle := NormalItemStyle, NormalItemStyle
+	if m.cursor == 0 {
+		cancelStyle = SelectedItemStyle
+	} else {
+		confirmStyle = SelectedItemStyle.Foreground(deleteColor)
+	}
+	b.WriteString(fmt.Sprintf("%s     %s", cancelStyle.Render("[ Cancel ]"), confirmStyle.Render("[ Delete ]")))
+	return renderBox(60, "Delete Playlist", b.String(), themeCol("#E24B4A"))
+}
+
 func NewDeleteModal(target *LocalFile, plStore *storage.DB) *DeleteModal {
 	return &DeleteModal{
 		target:  target,

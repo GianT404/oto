@@ -135,6 +135,17 @@ func (a *App) handleModalMouseClick(modal Overlay, click tea.MouseClickMsg) tea.
 			}
 			m.cursor = idx
 		}
+	case *DeletePlaylistModal:
+		boxW = 60
+		boxH := lipgloss.Height(m.View())
+		boxX, boxY := (a.width-boxW)/2, (a.height-boxH)/2
+		if click.X >= boxX+2 && click.X < boxX+boxW-2 && click.Y == boxY+4 {
+			idx = 0
+			if click.X >= boxX+31 {
+				idx = 1
+			}
+			m.cursor = idx
+		}
 	case *MoveConfirmModal:
 		boxW = 60
 		boxH := lipgloss.Height(m.View())
@@ -508,7 +519,7 @@ func (a *App) handleMouseClick(m tea.MouseClickMsg) tea.Cmd {
 	if !a.mouseEnabled {
 		return nil
 	}
-	if len(a.modals) > 0 || a.left.showDeletePopup || a.left.showPlInput || a.palette.Visible() {
+	if len(a.modals) > 0 || a.left.showPlInput || a.palette.Visible() {
 		return nil
 	}
 	if cmd, handled := a.clickLanguagePopup(m); handled {

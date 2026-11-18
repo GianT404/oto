@@ -57,10 +57,7 @@ type LeftPanel struct {
 	inputDownload string
 	inputPlaylist string
 
-	animTick          int
-	showDeletePopup   bool
-	deletePopupCursor int
-	deleteMsg         string
+	animTick int
 
 	suggestions   []string
 	suggestCursor int
@@ -142,80 +139,6 @@ func (p LeftPanel) Init() tea.Cmd { return textinput.Blink }
 
 func (p LeftPanel) Update(msg tea.Msg, focused bool, nowPlay *domain.Track) (LeftPanel, tea.Cmd) {
 	var cmds []tea.Cmd
-
-	if p.showDeletePopup {
-		if k, ok := msg.(tea.KeyMsg); ok {
-			switch k.String() {
-			case "left", "right", "up", "down", "h", "l":
-				if p.deletePopupCursor == 0 {
-					p.deletePopupCursor = 1
-				} else {
-					p.deletePopupCursor = 0
-				}
-			case "enter":
-				if p.deletePopupCursor == 1 {
-					if p.activePlaylist != nil && len(p.activePlaylist.Tracks) > 0 {
-						filtered := p.getFilteredPlaylistTracks()
-						if p.plCursor < len(filtered) {
-							trackID := filtered[p.plCursor].ID
-							p.plStore.RemoveTrackFromPlaylist(p.activePlaylist.ID, trackID)
-
-							var filteredTracks []storage.PlaylistTrack
-							for _, t := range p.activePlaylist.Tracks {
-								if t.ID != trackID {
-									filteredTracks = append(filteredTracks, t)
-								}
-							}
-							p.activePlaylist.Tracks = filteredTracks
-							for i, pl := range p.playlists {
-								if pl.ID == p.activePlaylist.ID {
-									p.playlists[i] = *p.activePlaylist
-								}
-							}
-
-							if p.plCursor >= len(p.getFilteredPlaylistTracks()) {
-								p.plCursor = len(p.getFilteredPlaylistTracks()) - 1
-								if p.plCursor < 0 {
-									p.plCursor = 0
-								}
-							}
-							if p.plOffset > p.plCursor {
-								p.plOffset = p.plCursor
-							}
-						}
-					} else if p.activePlaylist == nil && len(p.playlists) > 0 {
-						filtered := p.getFilteredPlaylists()
-						if p.plCursor < len(filtered) {
-							plID := filtered[p.plCursor].ID
-							p.plStore.DeletePlaylist(plID)
-
-							for i, pl := range p.playlists {
-								if pl.ID == plID {
-									p.playlists = append(p.playlists[:i], p.playlists[i+1:]...)
-									break
-								}
-							}
-
-							if p.plCursor >= len(p.getFilteredPlaylists()) {
-								p.plCursor = len(p.getFilteredPlaylists()) - 1
-								if p.plCursor < 0 {
-									p.plCursor = 0
-								}
-							}
-							if p.plOffset > p.plCursor {
-								p.plOffset = p.plCursor
-							}
-						}
-					}
-				}
-				p.showDeletePopup = false
-				return p, nil
-			case "esc":
-				p.showDeletePopup = false
-				return p, nil
-			}
-		}
-	}
 
 	if p.showPlInput {
 		if k, ok := msg.(tea.KeyMsg); ok {
@@ -553,17 +476,6 @@ func (p LeftPanel) Update(msg tea.Msg, focused bool, nowPlay *domain.Track) (Lef
 			}
 
 		case "delete":
-			if focused && !p.input.Focused() && p.activeTab == SidePlaylists && p.plStore != nil {
-				if p.activePlaylist != nil && len(p.activePlaylist.Tracks) > 0 && p.plCursor < len(p.getFilteredPlaylistTracks()) {
-					p.deleteMsg = "Delete track from playlist?"
-					p.showDeletePopup = true
-					p.deletePopupCursor = 0
-				} else if p.activePlaylist == nil && len(p.playlists) > 0 && p.plCursor < len(p.getFilteredPlaylists()) {
-					p.deleteMsg = "Delete playlist?"
-					p.showDeletePopup = true
-					p.deletePopupCursor = 0
-				}
-			}
 			if focused && !p.input.Focused() && p.activeTab == SideQueue {
 				return p, func() tea.Msg { return RemoveFromQueueMsg{Index: p.qCursor} }
 			}
@@ -814,6 +726,22 @@ func (p LeftPanel) Update(msg tea.Msg, focused bool, nowPlay *domain.Track) (Lef
 
 	case DownloadDoneMsg:
 		p.loadingDownload = false
+	case PlaylistDeleteDoneMsg:
+		if msg.Err == nil {
+			for i, playlist := range p.playlists {
+				if playlist.ID == msg.ID {
+					p.playlists = append(p.playlists[:i], p.playlists[i+1:]...)
+					break
+				}
+			}
+			filtered := p.getFilteredPlaylists()
+			if p.plCursor >= len(filtered) {
+				p.plCursor = maxInt(len(filtered)-1, 0)
+			}
+			if p.plOffset > p.plCursor {
+				p.plOffset = p.plCursor
+			}
+		}
 	case MetaSavedMsg:
 		if msg.Err == nil {
 			p.scanLocalFiles()
@@ -832,7 +760,7 @@ func (p LeftPanel) Update(msg tea.Msg, focused bool, nowPlay *domain.Track) (Lef
 	cmds = append(cmds, inputCmd)
 	newVal := strings.TrimSpace(p.input.Value())
 
-	if p.activeTab == SideSearch && p.input.Focused() && !p.showDeletePopup {
+	if p.activeTab == SideSearch && p.input.Focused() {
 		if newVal != oldVal {
 			p.suggestFocus = false
 			if newVal == "" {

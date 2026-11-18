@@ -286,6 +286,13 @@ func (a *App) handleAudioEvents(msg tea.Msg) tea.Cmd {
 func (a *App) handleDataEvents(msg tea.Msg) tea.Cmd {
 	var cmds []tea.Cmd
 	switch msg := msg.(type) {
+	case PlaylistDeleteDoneMsg:
+		if msg.Err != nil {
+			a.setStatus(StatusErrStyle.Render("X Failed to delete playlist: " + msg.Err.Error()))
+		} else {
+			a.setStatus(StatusOKStyle.Render("> Deleted playlist: " + msg.Name))
+		}
+
 	case OpenLyricsSearchMsg:
 		if a.playback == nil || a.playback.NowPlay == nil {
 			a.setStatus(StatusErrStyle.Render("X Play a track before searching lyrics"))

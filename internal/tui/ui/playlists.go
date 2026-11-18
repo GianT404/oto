@@ -257,17 +257,3 @@ func (p LeftPanel) renderPlInputPopup() string {
 	inputContent := lipgloss.NewStyle().Width(36).Render(p.plInput.View())
 	return renderBox(40, "New Playlist", inputContent, themeCol("#e8593c"))
 }
-
-func (p LeftPanel) renderDeletePopup() string {
-	var b strings.Builder
-	b.WriteString(p.deleteMsg + "\n\n")
-	cancelStyle := NormalItemStyle
-	confirmStyle := NormalItemStyle
-	if p.deletePopupCursor == 0 {
-		cancelStyle = SelectedItemStyle
-	} else {
-		confirmStyle = SelectedItemStyle.Foreground(deleteColor)
-	}
-	b.WriteString(fmt.Sprintf("  %s     %s", cancelStyle.Render("[ Cancel ]"), confirmStyle.Render("[ Delete ]")))
-	return renderBox(45, "Confirm", b.String(), themeCol("#E24B4A"))
-}

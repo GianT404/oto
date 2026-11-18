@@ -273,11 +273,11 @@ func (a *App) otoRowHints() []globalHelpHint {
 				{text: StyleHint("esc", "cancel")},
 			}
 		}
-		return []globalHelpHint{
+		hints := []globalHelpHint{
 			{text: StyleHint(",", "new playlist")},
 			{text: StyleHintActive("l", "lyric", a.right.showLangPopup), key: 'l'},
-			{text: StyleHint("delete", "its deletes :)")},
 		}
+		return hints
 	default:
 		return nil
 	}
@@ -329,6 +329,8 @@ func (a *App) renderOverlayView(view string) string {
 			hints = StyleHint("enter", "create") + "  " + StyleHint("esc", "cancel")
 		case *DeleteModal:
 			hints = StyleHint("←/→", "select") + "  " + StyleHint("enter", "confirm") + "  " + StyleHint("esc", "back")
+		case *DeletePlaylistModal:
+			hints = StyleHint("←/→", "select") + "  " + StyleHint("enter", "confirm") + "  " + StyleHint("esc", "cancel")
 		case *MoveConfirmModal:
 			hints = StyleHint("←/→", "select") + "  " + StyleHint("enter", "confirm") + "  " + StyleHint("esc", "cancel")
 		case *LyricsSearchModal:
@@ -338,7 +340,7 @@ func (a *App) renderOverlayView(view string) string {
 		}
 		if a.mouseEnabled {
 			switch modal.(type) {
-			case *DeleteModal, *MoveConfirmModal:
+			case *DeleteModal, *DeletePlaylistModal, *MoveConfirmModal:
 				hints += "  " + StyleHint("click", "select") + "  " + StyleHint("double-click", "confirm")
 			}
 		}
@@ -359,10 +361,6 @@ func (a *App) renderOverlayView(view string) string {
 			Width(a.width).
 			Render(" " + StyleHint("enter", "create") + "  " + StyleHint("esc", "cancel"))
 		return strings.Join(lines, "\n")
-	}
-	if a.left.showDeletePopup {
-		popup := a.left.renderDeletePopup()
-		return lipgloss.Place(a.width, a.height, lipgloss.Center, lipgloss.Center, popup)
 	}
 	if a.palette.Visible() {
 		popup := a.palette.View()
