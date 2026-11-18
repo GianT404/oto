@@ -25,7 +25,7 @@ var helpSections = []helpSection{
 		binds: []helpBind{
 			{"?", "Toggle Help"},
 			{"tab", "Switch Tab"},
-			{"1-5", "Jump to Tab"},
+			{"1-7", "Jump to Tab"},
 			{":", "Commands"},
 			{"/", "Search"},
 			{"\\", "Visualizer"},
