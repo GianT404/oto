@@ -30,7 +30,7 @@ func (r RightPanel) renderLyricsBox(borderColor color.Color, frame int) string {
 // languageNames maps common language/subtitle codes to friendly display
 // names for the language picker popup.
 var languageNames = map[string]string{
-	"lrclib":  "Synced Lyrics (LRCLib)",
+	"lrclib":  "LRCLib",
 	"en":      "English",
 	"vi":      "Tiếng Việt",
 	"ja":      "日本語 (Japanese)",
@@ -42,8 +42,6 @@ var languageNames = map[string]string{
 	"de":      "Deutsch",
 	"th":      "ไทย (Thai)",
 	"ru":      "Русский",
-	"pt":      "Português",
-	"id":      "Bahasa Indonesia",
 }
 
 func languageLabel(code string) string {
@@ -65,9 +63,6 @@ func (r RightPanel) renderLangPopupHeight(innerW, lyrH int) string {
 
 	for i, t := range r.lyrics.AllTracks {
 		label := languageLabel(t.Language)
-		if t.Source != "" {
-			label += " · " + t.Source
-		}
 
 		cursor := " "
 		tick := " "
