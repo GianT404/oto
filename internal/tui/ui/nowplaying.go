@@ -11,6 +11,8 @@ import (
 	tea "charm.land/bubbletea/v2"
 )
 
+const localLyricSyncOffset = 200 * time.Millisecond
+
 type RightPanel struct {
 	lyrics  domain.LyricsResp
 	loaded  bool
@@ -295,7 +297,11 @@ func (r *RightPanel) syncSyncedLine(forceScroll bool) {
 		return
 	}
 
-	elapsedSec := r.elapsed.Seconds()
+	elapsed := r.elapsed
+	if r.nowPlay != nil && strings.HasPrefix(r.nowPlay.ID, "local:") {
+		elapsed += localLyricSyncOffset
+	}
+	elapsedSec := elapsed.Seconds()
 	best := 0
 	for i, line := range r.lyrics.Synced {
 		if line.Time <= elapsedSec {
