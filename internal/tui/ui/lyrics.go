@@ -59,62 +59,63 @@ func (r RightPanel) renderLangPopup(innerW int) string {
 }
 
 func (r RightPanel) renderLangPopupHeight(innerW, lyrH int) string {
-	var b strings.Builder
-
+	if lyrH < 1 {
+		lyrH = 1
+	}
+	count := len(r.lyrics.AllTracks)
+	lines := make([]string, 0, count+2)
+	selectedRow := count + 1
 	for i, t := range r.lyrics.AllTracks {
 		label := languageLabel(t.Language)
-
-		cursor := " "
 		tick := " "
 		if i == r.lyrics.LanguageIndex() {
 			tick = "+"
 		}
-
-		line := fmt.Sprintf(" %s [%s] %s", cursor, tick, label)
-
+		line := fmt.Sprintf("  [%s] %s", tick, label)
 		if i == r.langCursor {
 			pad := innerW - runewidth.StringWidth(line)
 			if pad < 0 {
 				pad = 0
 			}
-
-			b.WriteString(
-				SelectedItemStyle.Render(line + strings.Repeat(" ", pad)),
-			)
+			lines = append(lines, SelectedItemStyle.Render(line+strings.Repeat(" ", pad)))
 		} else {
-			b.WriteString(LyricNormalStyle.Render(line))
+			lines = append(lines, LyricNormalStyle.Render(line))
 		}
-
-		b.WriteString("\n")
 	}
-
-	written := len(r.lyrics.AllTracks)
-	if written == 0 {
-		b.WriteString(DimItemStyle.Render("(no languages available)"))
-		b.WriteString("\n")
-		written++
+	if count == 0 {
+		lines = append(lines, DimItemStyle.Render("(no languages available)"))
 	}
-	b.WriteString("\n")
-	written++
-
+	lines = append(lines, "")
 	line := "  Search lyrics on LRCLib..."
 	pad := innerW - runewidth.StringWidth(line)
 	if pad < 0 {
 		pad = 0
 	}
-	if r.langCursor == len(r.lyrics.AllTracks) {
-		b.WriteString(SelectedItemStyle.Render(line + strings.Repeat(" ", pad)))
+	if r.langCursor == count {
+		lines = append(lines, SelectedItemStyle.Render(line+strings.Repeat(" ", pad)))
 	} else {
-		b.WriteString(DimItemStyle.Render(line))
-	}
-	written++
-
-	for written < lyrH {
-		b.WriteString("\n")
-		written++
+		lines = append(lines, DimItemStyle.Render(line))
 	}
 
-	return strings.TrimSuffix(b.String(), "\n")
+	if count == 0 {
+		selectedRow = 2
+	}
+	start := selectedRow - lyrH + 1
+	if start < 0 {
+		start = 0
+	}
+	if maxStart := len(lines) - lyrH; start > maxStart {
+		start = maxStart
+	}
+	if start < 0 {
+		start = 0
+	}
+	end := minInt(start+lyrH, len(lines))
+	visible := append([]string(nil), lines[start:end]...)
+	for len(visible) < lyrH {
+		visible = append(visible, "")
+	}
+	return strings.Join(visible, "\n")
 }
 
 func renderNoLyricsContent(innerW, innerH, frame int) string {
