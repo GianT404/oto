@@ -1,0 +1,183 @@
+"filename", "language", "Go", "Go Module File", "TypeScript", "JSON with Comments", "TypeScript JSX", "JSON", "Shell Script", "PowerShell", "JavaScript", "Go Checksum File", "YAML", "HTML", "Markdown", "Docker", "XML", "comment", "blank", "total"
+"/home/gian/Projects/oto/.github/workflows/deploy-docs.yml", "YAML", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 31, 0, 0, 0, 0, 0, 8, 39
+"/home/gian/Projects/oto/.github/workflows/deploy.yml", "YAML", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 142, 0, 0, 0, 0, 8, 27, 177
+"/home/gian/Projects/oto/.github/workflows/release-oto-mobile.yml", "YAML", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 73, 0, 0, 0, 0, 2, 19, 94
+"/home/gian/Projects/oto/.github/workflows/release-oto.yml", "YAML", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 65, 0, 0, 0, 0, 3, 18, 86
+"/home/gian/Projects/oto/.github/workflows/test-mobile.yml", "YAML", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 35, 0, 0, 0, 0, 0, 6, 41
+"/home/gian/Projects/oto/.github/workflows/test-tui.yml", "YAML", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 37, 0, 0, 0, 0, 1, 7, 45
+"/home/gian/Projects/oto/Dockerfile", "Docker", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 17, 0, 0, 11, 28
+"/home/gian/Projects/oto/README.md", "Markdown", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 150, 0, 0, 0, 53, 203
+"/home/gian/Projects/oto/app/App.tsx", "TypeScript JSX", 0, 0, 0, 0, 13, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 15
+"/home/gian/Projects/oto/app/app.json", "JSON", 0, 0, 0, 0, 0, 48, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 48
+"/home/gian/Projects/oto/app/index.ts", "TypeScript", 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 3, 9
+"/home/gian/Projects/oto/app/package-lock.json", "JSON", 0, 0, 0, 0, 0, 9024, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 9025
+"/home/gian/Projects/oto/app/package.json", "JSON", 0, 0, 0, 0, 0, 45, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 46
+"/home/gian/Projects/oto/app/plugins/withReleaseSigning.js", "JavaScript", 0, 0, 0, 0, 0, 0, 0, 0, 30, 0, 0, 0, 0, 0, 0, 16, 6, 52
+"/home/gian/Projects/oto/app/src/components/MarqueeText.tsx", "TypeScript JSX", 0, 0, 0, 0, 98, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 15, 122
+"/home/gian/Projects/oto/app/src/components/MiniPlayer.tsx", "TypeScript JSX", 0, 0, 0, 0, 147, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 11, 12, 170
+"/home/gian/Projects/oto/app/src/components/MusicCard.tsx", "TypeScript JSX", 0, 0, 0, 0, 151, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 13, 14, 178
+"/home/gian/Projects/oto/app/src/components/NeoShadowWrapper.tsx", "TypeScript JSX", 0, 0, 0, 0, 41, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 43
+"/home/gian/Projects/oto/app/src/components/SongRow.tsx", "TypeScript JSX", 0, 0, 0, 0, 83, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 89
+"/home/gian/Projects/oto/app/src/components/SyncedLyrics.tsx", "TypeScript JSX", 0, 0, 0, 0, 159, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 13, 23, 195
+"/home/gian/Projects/oto/app/src/contexts/PlayerContext.tsx", "TypeScript JSX", 0, 0, 0, 0, 353, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 36, 60, 449
+"/home/gian/Projects/oto/app/src/hooks/useThumbColor.ts", "TypeScript", 0, 0, 79, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 32, 15, 126
+"/home/gian/Projects/oto/app/src/navigation/AppNavigator.tsx", "TypeScript JSX", 0, 0, 0, 0, 30, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 35
+"/home/gian/Projects/oto/app/src/screens/HomeScreen.tsx", "TypeScript JSX", 0, 0, 0, 0, 215, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 17, 238
+"/home/gian/Projects/oto/app/src/screens/LyricsScreen.tsx", "TypeScript JSX", 0, 0, 0, 0, 295, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 22, 21, 338
+"/home/gian/Projects/oto/app/src/screens/NowPlayingScreen.tsx", "TypeScript JSX", 0, 0, 0, 0, 291, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 39, 340
+"/home/gian/Projects/oto/app/src/screens/PlaylistScreen.tsx", "TypeScript JSX", 0, 0, 0, 0, 152, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 12, 168
+"/home/gian/Projects/oto/app/src/screens/SearchScreen.tsx", "TypeScript JSX", 0, 0, 0, 0, 162, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 172
+"/home/gian/Projects/oto/app/src/screens/SettingsScreen.tsx", "TypeScript JSX", 0, 0, 0, 0, 365, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 21, 29, 415
+"/home/gian/Projects/oto/app/src/services/api.ts", "TypeScript", 0, 0, 198, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 21, 29, 248
+"/home/gian/Projects/oto/app/src/services/audioDownload.ts", "TypeScript", 0, 0, 95, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 12, 108
+"/home/gian/Projects/oto/app/src/services/audioSettings.ts", "TypeScript", 0, 0, 46, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 11, 64
+"/home/gian/Projects/oto/app/src/services/mediaControls.ts", "TypeScript", 0, 0, 118, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 29, 10, 157
+"/home/gian/Projects/oto/app/src/services/playlistStore.ts", "TypeScript", 0, 0, 180, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 30, 38, 248
+"/home/gian/Projects/oto/app/src/theme/index.ts", "TypeScript", 0, 0, 132, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 21, 163
+"/home/gian/Projects/oto/app/tsconfig.json", "JSON with Comments", 0, 0, 0, 13, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 14
+"/home/gian/Projects/oto/assets/logo-ascii.svg", "XML", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 18, 0, 2, 20
+"/home/gian/Projects/oto/cmd/oto-sign/main.go", "Go", 80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 90
+"/home/gian/Projects/oto/cmd/oto/assets.go", "Go", 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 4, 10
+"/home/gian/Projects/oto/cmd/oto/assets/oto.svg", "XML", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 0, 1, 10
+"/home/gian/Projects/oto/cmd/oto/assets_install.go", "Go", 74, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15, 89
+"/home/gian/Projects/oto/cmd/oto/install.go", "Go", 189, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 24, 213
+"/home/gian/Projects/oto/cmd/oto/library_stats.go", "Go", 50, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 59
+"/home/gian/Projects/oto/cmd/oto/main.go", "Go", 253, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 26, 283
+"/home/gian/Projects/oto/cmd/oto/signkey.go", "Go", 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 2, 11
+"/home/gian/Projects/oto/cmd/oto/update.go", "Go", 378, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 64, 450
+"/home/gian/Projects/oto/cmd/oto/update_test.go", "Go", 108, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 19, 130
+"/home/gian/Projects/oto/cmd/server/main.go", "Go", 188, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 16, 37, 241
+"/home/gian/Projects/oto/cmd/server/main_test.go", "Go", 68, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 11, 85
+"/home/gian/Projects/oto/docker-compose.yml", "YAML", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 60, 0, 0, 0, 0, 0, 2, 62
+"/home/gian/Projects/oto/docs/index.html", "HTML", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 126, 0, 0, 0, 1, 20, 147
+"/home/gian/Projects/oto/docs/openapi.yaml", "YAML", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 397, 0, 0, 0, 0, 0, 16, 413
+"/home/gian/Projects/oto/go.mod", "Go Module File", 0, 53, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 57
+"/home/gian/Projects/oto/go.sum", "Go Checksum File", 0, 0, 0, 0, 0, 0, 0, 0, 0, 160, 0, 0, 0, 0, 0, 0, 1, 161
+"/home/gian/Projects/oto/internal/backend/auth.go", "Go", 22, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 27
+"/home/gian/Projects/oto/internal/backend/auth_test.go", "Go", 59, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15, 74
+"/home/gian/Projects/oto/internal/backend/deviceauth.go", "Go", 154, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 17, 26, 197
+"/home/gian/Projects/oto/internal/backend/deviceauth_test.go", "Go", 139, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 19, 163
+"/home/gian/Projects/oto/internal/backend/ratelimit.go", "Go", 145, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 20, 173
+"/home/gian/Projects/oto/internal/backend/ratelimit_test.go", "Go", 94, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 19, 113
+"/home/gian/Projects/oto/internal/cache/ttl.go", "Go", 70, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 10, 83
+"/home/gian/Projects/oto/internal/cache/ttl_test.go", "Go", 42, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 47
+"/home/gian/Projects/oto/internal/domain/models.go", "Go", 82, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 11, 93
+"/home/gian/Projects/oto/internal/domain/provider.go", "Go", 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 6, 23
+"/home/gian/Projects/oto/internal/fileutil/unique.go", "Go", 102, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 10, 118
+"/home/gian/Projects/oto/internal/handler/lyrics.go", "Go", 117, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 14, 19, 150
+"/home/gian/Projects/oto/internal/handler/lyrics_search.go", "Go", 67, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 9, 77
+"/home/gian/Projects/oto/internal/handler/lyrics_search_test.go", "Go", 31, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 34
+"/home/gian/Projects/oto/internal/handler/resolve.go", "Go", 54, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 12, 70
+"/home/gian/Projects/oto/internal/handler/search.go", "Go", 78, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 14, 94
+"/home/gian/Projects/oto/internal/handler/stream.go", "Go", 194, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 34, 34, 262
+"/home/gian/Projects/oto/internal/handler/writeerror_test.go", "Go", 25, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 30
+"/home/gian/Projects/oto/internal/local/provider.go", "Go", 168, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 24, 192
+"/home/gian/Projects/oto/internal/scraper/circuitbreaker.go", "Go", 37, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 44
+"/home/gian/Projects/oto/internal/scraper/circuitbreaker_test.go", "Go", 46, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 13, 59
+"/home/gian/Projects/oto/internal/scraper/direct_subs.go", "Go", 143, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 30, 179
+"/home/gian/Projects/oto/internal/scraper/lrclib.go", "Go", 408, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 33, 58, 499
+"/home/gian/Projects/oto/internal/scraper/lrclib_search_test.go", "Go", 92, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 101
+"/home/gian/Projects/oto/internal/scraper/lyrics_fallback.go", "Go", 297, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 43, 360
+"/home/gian/Projects/oto/internal/scraper/lyrics_fallback_test.go", "Go", 151, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 14, 165
+"/home/gian/Projects/oto/internal/scraper/lyrics_pipeline.go", "Go", 121, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 16, 139
+"/home/gian/Projects/oto/internal/scraper/resilient.go", "Go", 212, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 42, 264
+"/home/gian/Projects/oto/internal/scraper/resilient_test.go", "Go", 151, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 36, 187
+"/home/gian/Projects/oto/internal/scraper/scraper.go", "Go", 53, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 18, 16, 87
+"/home/gian/Projects/oto/internal/scraper/suggest.go", "Go", 52, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 9, 62
+"/home/gian/Projects/oto/internal/scraper/vtt_parser.go", "Go", 68, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 15, 92
+"/home/gian/Projects/oto/internal/scraper/ytdlp.go", "Go", 874, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 58, 136, 1068
+"/home/gian/Projects/oto/internal/scraper/ytdlp_retry_test.go", "Go", 30, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 4, 36
+"/home/gian/Projects/oto/internal/storage/db.go", "Go", 263, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 11, 39, 313
+"/home/gian/Projects/oto/internal/storage/downloads.go", "Go", 419, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 16, 42, 477
+"/home/gian/Projects/oto/internal/storage/library_stats.go", "Go", 83, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 20, 110
+"/home/gian/Projects/oto/internal/storage/library_stats_test.go", "Go", 64, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 72
+"/home/gian/Projects/oto/internal/storage/migration.go", "Go", 146, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 14, 163
+"/home/gian/Projects/oto/internal/storage/playlists.go", "Go", 146, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 17, 166
+"/home/gian/Projects/oto/internal/tui/api/client.go", "Go", 207, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 17, 225
+"/home/gian/Projects/oto/internal/tui/audio/capture.go", "Go", 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 48
+"/home/gian/Projects/oto/internal/tui/audio/capture_linux.go", "Go", 49, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 12, 62
+"/home/gian/Projects/oto/internal/tui/audio/capture_other.go", "Go", 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 4, 11
+"/home/gian/Projects/oto/internal/tui/audio/capture_windows.go", "Go", 72, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 24, 98
+"/home/gian/Projects/oto/internal/tui/audio/fft.go", "Go", 98, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 118
+"/home/gian/Projects/oto/internal/tui/avrcp/avrcp.go", "Go", 298, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 45, 350
+"/home/gian/Projects/oto/internal/tui/avrcp/dbus.go", "Go", 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 11
+"/home/gian/Projects/oto/internal/tui/bindeps/bindeps.go", "Go", 21, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 27
+"/home/gian/Projects/oto/internal/tui/layout/layout.go", "Go", 72, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 14, 86
+"/home/gian/Projects/oto/internal/tui/layout/layout_test.go", "Go", 119, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 17, 136
+"/home/gian/Projects/oto/internal/tui/layout/third_column.go", "Go", 76, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 18, 96
+"/home/gian/Projects/oto/internal/tui/layout/tracklist.go", "Go", 54, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 10, 65
+"/home/gian/Projects/oto/internal/tui/logbuf/logbuf.go", "Go", 142, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 22, 164
+"/home/gian/Projects/oto/internal/tui/logbuf/logbuf_test.go", "Go", 128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 15, 145
+"/home/gian/Projects/oto/internal/tui/player/opus_player.go", "Go", 564, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 17, 88, 669
+"/home/gian/Projects/oto/internal/tui/player/player_test.go", "Go", 78, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 16, 94
+"/home/gian/Projects/oto/internal/tui/render/box.go", "Go", 49, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 12, 61
+"/home/gian/Projects/oto/internal/tui/render/frame.go", "Go", 21, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 3, 25
+"/home/gian/Projects/oto/internal/tui/render/frame_test.go", "Go", 16, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 20
+"/home/gian/Projects/oto/internal/tui/render/lyrics.go", "Go", 65, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 14, 79
+"/home/gian/Projects/oto/internal/tui/render/lyrics_test.go", "Go", 51, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 60
+"/home/gian/Projects/oto/internal/tui/render/progress.go", "Go", 98, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 14, 112
+"/home/gian/Projects/oto/internal/tui/render/progress_test.go", "Go", 49, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 55
+"/home/gian/Projects/oto/internal/tui/ui/app.go", "Go", 858, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 113, 976
+"/home/gian/Projects/oto/internal/tui/ui/app_audit_test.go", "Go", 197, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 27, 225
+"/home/gian/Projects/oto/internal/tui/ui/app_events.go", "Go", 469, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 52, 528
+"/home/gian/Projects/oto/internal/tui/ui/app_view.go", "Go", 577, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 59, 639
+"/home/gian/Projects/oto/internal/tui/ui/app_view_status_test.go", "Go", 25, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 30
+"/home/gian/Projects/oto/internal/tui/ui/bocchi_frame.go", "Go", 13, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 15
+"/home/gian/Projects/oto/internal/tui/ui/box.go", "Go", 8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 12
+"/home/gian/Projects/oto/internal/tui/ui/box_test.go", "Go", 27, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 35
+"/home/gian/Projects/oto/internal/tui/ui/browse.go", "Go", 1097, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 13, 87, 1197
+"/home/gian/Projects/oto/internal/tui/ui/cache.go", "Go", 75, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 84
+"/home/gian/Projects/oto/internal/tui/ui/cmdpopup.go", "Go", 513, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 53, 575
+"/home/gian/Projects/oto/internal/tui/ui/commands.go", "Go", 79, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 12, 92
+"/home/gian/Projects/oto/internal/tui/ui/dashboard.go", "Go", 43, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 12, 59
+"/home/gian/Projects/oto/internal/tui/ui/downloads.go", "Go", 146, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 23, 169
+"/home/gian/Projects/oto/internal/tui/ui/downloads_test.go", "Go", 73, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 9, 84
+"/home/gian/Projects/oto/internal/tui/ui/escmenu.go", "Go", 91, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 100
+"/home/gian/Projects/oto/internal/tui/ui/help.go", "Go", 249, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 29, 281
+"/home/gian/Projects/oto/internal/tui/ui/hintbar.go", "Go", 30, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 38
+"/home/gian/Projects/oto/internal/tui/ui/import.go", "Go", 296, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 34, 331
+"/home/gian/Projects/oto/internal/tui/ui/keyboard.go", "Go", 206, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 12, 219
+"/home/gian/Projects/oto/internal/tui/ui/logo.go", "Go", 30, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 4, 35
+"/home/gian/Projects/oto/internal/tui/ui/logs.go", "Go", 59, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 12, 71
+"/home/gian/Projects/oto/internal/tui/ui/lyrics.go", "Go", 251, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 37, 290
+"/home/gian/Projects/oto/internal/tui/ui/lyrics_fullscreen.go", "Go", 24, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 31
+"/home/gian/Projects/oto/internal/tui/ui/metadata.go", "Go", 37, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 8, 46
+"/home/gian/Projects/oto/internal/tui/ui/modal_delete.go", "Go", 102, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 16, 118
+"/home/gian/Projects/oto/internal/tui/ui/modal_info.go", "Go", 61, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 14, 75
+"/home/gian/Projects/oto/internal/tui/ui/modal_lists.go", "Go", 207, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 21, 237
+"/home/gian/Projects/oto/internal/tui/ui/modal_lyrics_search.go", "Go", 361, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 36, 399
+"/home/gian/Projects/oto/internal/tui/ui/modal_lyrics_search_test.go", "Go", 94, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 12, 106
+"/home/gian/Projects/oto/internal/tui/ui/modal_rename.go", "Go", 99, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 17, 118
+"/home/gian/Projects/oto/internal/tui/ui/modal_rename_playlist.go", "Go", 131, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 22, 153
+"/home/gian/Projects/oto/internal/tui/ui/mouse.go", "Go", 697, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 11, 59, 767
+"/home/gian/Projects/oto/internal/tui/ui/mouse_test.go", "Go", 109, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 19, 134
+"/home/gian/Projects/oto/internal/tui/ui/moveplaylist.go", "Go", 173, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 12, 194
+"/home/gian/Projects/oto/internal/tui/ui/msgs.go", "Go", 151, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 29, 180
+"/home/gian/Projects/oto/internal/tui/ui/nobodyHere.go", "Go", 75, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 11, 86
+"/home/gian/Projects/oto/internal/tui/ui/nowplaying.go", "Go", 365, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 39, 410
+"/home/gian/Projects/oto/internal/tui/ui/nowplaying_generation_test.go", "Go", 37, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 46
+"/home/gian/Projects/oto/internal/tui/ui/palette.go", "Go", 548, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 21, 134, 703
+"/home/gian/Projects/oto/internal/tui/ui/palette_tempo_test.go", "Go", 50, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 11, 61
+"/home/gian/Projects/oto/internal/tui/ui/playback.go", "Go", 540, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 14, 72, 626
+"/home/gian/Projects/oto/internal/tui/ui/playback_invariants_test.go", "Go", 66, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 14, 80
+"/home/gian/Projects/oto/internal/tui/ui/playback_test.go", "Go", 232, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 38, 270
+"/home/gian/Projects/oto/internal/tui/ui/playlist_state.go", "Go", 16, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 4, 21
+"/home/gian/Projects/oto/internal/tui/ui/playlist_state_test.go", "Go", 84, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 17, 101
+"/home/gian/Projects/oto/internal/tui/ui/playlists.go", "Go", 217, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 41, 260
+"/home/gian/Projects/oto/internal/tui/ui/queue.go", "Go", 32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 40
+"/home/gian/Projects/oto/internal/tui/ui/search.go", "Go", 93, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 13, 106
+"/home/gian/Projects/oto/internal/tui/ui/settings.go", "Go", 181, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 19, 200
+"/home/gian/Projects/oto/internal/tui/ui/settings_test.go", "Go", 163, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 32, 203
+"/home/gian/Projects/oto/internal/tui/ui/shared_list.go", "Go", 82, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 102
+"/home/gian/Projects/oto/internal/tui/ui/sidebar.go", "Go", 154, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 27, 185
+"/home/gian/Projects/oto/internal/tui/ui/skip_silence.go", "Go", 34, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 38
+"/home/gian/Projects/oto/internal/tui/ui/splash.go", "Go", 46, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 13, 60
+"/home/gian/Projects/oto/internal/tui/ui/styles.go", "Go", 228, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 11, 51, 290
+"/home/gian/Projects/oto/internal/tui/ui/theme.go", "Go", 62, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 14, 77
+"/home/gian/Projects/oto/internal/tui/ui/toggle.go", "Go", 92, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 22, 117
+"/home/gian/Projects/oto/scripts/generate-tui-changelog.sh", "Shell Script", 0, 0, 0, 0, 0, 0, 45, 0, 0, 0, 0, 0, 0, 0, 0, 1, 13, 59
+"/home/gian/Projects/oto/scripts/install.ps1", "PowerShell", 0, 0, 0, 0, 0, 0, 0, 79, 0, 0, 0, 0, 0, 0, 0, 7, 19, 105
+"/home/gian/Projects/oto/scripts/install.sh", "Shell Script", 0, 0, 0, 0, 0, 0, 78, 0, 0, 0, 0, 0, 0, 0, 0, 9, 13, 100
+"/home/gian/Projects/oto/scripts/release-mobile.sh", "Shell Script", 0, 0, 0, 0, 0, 0, 32, 0, 0, 0, 0, 0, 0, 0, 0, 4, 10, 46
+"/home/gian/Projects/oto/scripts/release-tui.sh", "Shell Script", 0, 0, 0, 0, 0, 0, 32, 0, 0, 0, 0, 0, 0, 0, 0, 4, 10, 46
+"Total", "-", 20345, 53, 851, 13, 2555, 9117, 187, 79, 30, 160, 840, 126, 150, 17, 27, 879, 3651, 39080
