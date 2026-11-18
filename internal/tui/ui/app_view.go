@@ -96,14 +96,14 @@ func (a *App) renderMainContent(layout tuilayout.UILayout) string {
 	case SidePlaylists:
 		a.left.SetSize(layout.TracklistWidth, contentH)
 		var selected map[string]bool
-		removeMode := a.moveSession != nil && a.moveSession.RemoveOnly &&
+		selectionMode := a.moveSession != nil && (a.moveSession.RemoveOnly || a.moveSession.ReorderOnly) &&
 			a.left.activePlaylist != nil && a.moveSession.TargetPlIdx >= 0 &&
 			a.moveSession.TargetPlIdx < len(a.left.playlists) &&
 			a.left.playlists[a.moveSession.TargetPlIdx].ID == a.left.activePlaylist.ID
-		if removeMode {
+		if selectionMode {
 			selected = a.moveSession.Selected
 		}
-		tracklistView := a.left.ViewPlaylistsContent(layout.TracklistWidth, contentH, playingID, selected, removeMode)
+		tracklistView := a.left.ViewPlaylistsContent(layout.TracklistWidth, contentH, playingID, selected, selectionMode)
 		col3View := a.renderThirdColumn(layout.ThirdColumnWidth, contentH)
 		mainView = lipgloss.JoinHorizontal(lipgloss.Top, tracklistView, col3View)
 
@@ -256,6 +256,15 @@ func (a *App) otoRowHints() []globalHelpHint {
 	case SidePlaylists:
 		if a.left.showPlInput {
 			return nil
+		}
+		if a.moveSession != nil && a.moveSession.ReorderOnly {
+			return []globalHelpHint{
+				{text: StyleHint("/", "search")},
+				{text: StyleHint(".", "select/deselect")},
+				{text: StyleHint("↑/↓", "move or browse")},
+				{text: StyleHint("enter", "save")},
+				{text: StyleHint("esc", "cancel")},
+			}
 		}
 		if a.moveSession != nil && a.moveSession.RemoveOnly {
 			return []globalHelpHint{

@@ -120,6 +120,33 @@ func (db *DB) RemoveTrackFromPlaylist(playlistID, trackID string) error {
 	return err
 }
 
+func (db *DB) ReorderPlaylistTracks(playlistID string, tracks []PlaylistTrack) error {
+	tx, err := db.conn.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	for position, track := range tracks {
+		trackID := track.Path
+		if trackID == "" {
+			trackID = track.ID
+		}
+		result, err := tx.Exec(
+			"UPDATE playlist_tracks SET position = ? WHERE playlist_id = ? AND track_id = ?",
+			position, playlistID, trackID,
+		)
+		if err != nil {
+			return err
+		}
+		if count, err := result.RowsAffected(); err != nil {
+			return err
+		} else if count != 1 {
+			return fmt.Errorf("playlist track %q no longer exists", trackID)
+		}
+	}
+	return tx.Commit()
+}
+
 // ── All playlists with tracks (bulk load) ────────────────────────
 
 func (db *DB) LoadAllPlaylists() ([]Playlist, error) {

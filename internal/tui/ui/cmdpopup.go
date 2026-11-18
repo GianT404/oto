@@ -225,6 +225,24 @@ func (a *App) runCmdOption(opt string) tea.Cmd {
 			return nil
 		}
 		return nil
+	case "Reorder tracks":
+		if a.sidebarActive != SidePlaylists || a.left.activePlaylist == nil {
+			return nil
+		}
+		plIdx := a.activePlaylistIndex()
+		if plIdx < 0 {
+			a.setStatus(StatusErrStyle.Render("X Active playlist not found"))
+			return nil
+		}
+		a.modals = nil
+		a.moveSession = &MoveSession{
+			TargetPlIdx:    plIdx,
+			Selected:       make(map[string]bool),
+			ReorderOnly:    true,
+			OriginalTracks: append([]storage.PlaylistTrack(nil), a.left.playlists[plIdx].Tracks...),
+		}
+		a.setStatus(StatusMsgStyle.Render("> Select tracks to reorder with ."))
+		return nil
 	}
 	return nil
 }
@@ -339,6 +357,7 @@ func (a *App) cmdOptionList() []string {
 			"Audio settings",
 			"Playback speed",
 			"Add tracks to playlist",
+			"Reorder tracks",
 			"Show file info",
 			"Remove from playlist",
 		}

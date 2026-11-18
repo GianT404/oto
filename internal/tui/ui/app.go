@@ -45,10 +45,12 @@ func sessionTick() tea.Cmd {
 }
 
 type MoveSession struct {
-	TargetPlIdx int
-	Selected    map[string]bool
-	AddOnly     bool
-	RemoveOnly  bool
+	TargetPlIdx    int
+	Selected       map[string]bool
+	AddOnly        bool
+	RemoveOnly     bool
+	ReorderOnly    bool
+	OriginalTracks []storage.PlaylistTrack
 }
 
 type App struct {
@@ -156,7 +158,7 @@ func (a *App) toggleMoveSelection() {
 	if a.moveSession == nil {
 		return
 	}
-	if a.moveSession.RemoveOnly {
+	if a.moveSession.RemoveOnly || a.moveSession.ReorderOnly {
 		if a.sidebarActive != SidePlaylists || a.left.activePlaylist == nil || a.left.input.Focused() ||
 			a.moveSession.TargetPlIdx < 0 || a.moveSession.TargetPlIdx >= len(a.left.playlists) ||
 			a.left.playlists[a.moveSession.TargetPlIdx].ID != a.left.activePlaylist.ID {
@@ -165,6 +167,14 @@ func (a *App) toggleMoveSelection() {
 		tracks := a.left.getFilteredPlaylistTracks()
 		if a.left.plCursor >= 0 && a.left.plCursor < len(tracks) {
 			key := playlistTrackSelectionKey(tracks[a.left.plCursor])
+			if a.moveSession.ReorderOnly {
+				if a.moveSession.Selected[key] {
+					a.moveSession.Selected = make(map[string]bool)
+				} else {
+					a.moveSession.Selected = map[string]bool{key: true}
+				}
+				return
+			}
 			a.moveSession.Selected[key] = !a.moveSession.Selected[key]
 		}
 		return
@@ -336,6 +346,131 @@ func (a *App) applyRemoveFromPlaylist() {
 		trackLabel = "track"
 	}
 	a.setStatus(StatusOKStyle.Render(fmt.Sprintf("> Removed %d %s from \"%s\"", removed, trackLabel, pl.Name)))
+}
+
+func (a *App) restorePlaylistOrder() {
+	if a.moveSession == nil || !a.moveSession.ReorderOnly || a.moveSession.TargetPlIdx < 0 || a.moveSession.TargetPlIdx >= len(a.left.playlists) {
+		return
+	}
+	a.left.playlists[a.moveSession.TargetPlIdx].Tracks = append([]storage.PlaylistTrack(nil), a.moveSession.OriginalTracks...)
+	a.left.rebindActivePlaylist()
+	tracks := a.left.getFilteredPlaylistTracks()
+	if a.left.plCursor >= len(tracks) {
+		a.left.plCursor = maxInt(len(tracks)-1, 0)
+	}
+	a.left.scrollPlIntoView()
+}
+
+func (a *App) moveSelectedPlaylistTracks(direction int) {
+	if a.moveSession == nil || !a.moveSession.ReorderOnly || a.moveSession.TargetPlIdx < 0 || a.moveSession.TargetPlIdx >= len(a.left.playlists) {
+		return
+	}
+	pl := &a.left.playlists[a.moveSession.TargetPlIdx]
+	filtered := a.left.getFilteredPlaylistTracks()
+	if len(filtered) == 0 {
+		return
+	}
+	if a.selectedMoveCount() == 0 {
+		a.left.plCursor = maxInt(0, minInt(a.left.plCursor+direction, len(filtered)-1))
+		a.left.scrollPlIntoView()
+		return
+	}
+	if a.left.plCursor < 0 || a.left.plCursor >= len(filtered) {
+		return
+	}
+	key := playlistTrackSelectionKey(filtered[a.left.plCursor])
+	if !a.moveSession.Selected[key] {
+		for selectedKey, selected := range a.moveSession.Selected {
+			if selected {
+				key = selectedKey
+				break
+			}
+		}
+	}
+	filteredIndex := -1
+	for i, track := range filtered {
+		if playlistTrackSelectionKey(track) == key {
+			filteredIndex = i
+			break
+		}
+	}
+	neighborIndex := filteredIndex + direction
+	if filteredIndex < 0 || neighborIndex < 0 || neighborIndex >= len(filtered) {
+		return
+	}
+	trackIndex, adjacentIndex := -1, -1
+	neighborKey := playlistTrackSelectionKey(filtered[neighborIndex])
+	for i, track := range pl.Tracks {
+		switch playlistTrackSelectionKey(track) {
+		case key:
+			trackIndex = i
+		case neighborKey:
+			adjacentIndex = i
+		}
+	}
+	if trackIndex < 0 || adjacentIndex < 0 {
+		return
+	}
+	track := pl.Tracks[trackIndex]
+	pl.Tracks = append(pl.Tracks[:trackIndex], pl.Tracks[trackIndex+1:]...)
+	if direction > 0 && adjacentIndex > trackIndex {
+		adjacentIndex--
+	}
+	if direction > 0 {
+		adjacentIndex++
+	}
+	pl.Tracks = append(pl.Tracks, storage.PlaylistTrack{})
+	copy(pl.Tracks[adjacentIndex+1:], pl.Tracks[adjacentIndex:])
+	pl.Tracks[adjacentIndex] = track
+	a.left.rebindActivePlaylist()
+	for i, filteredTrack := range a.left.getFilteredPlaylistTracks() {
+		if playlistTrackSelectionKey(filteredTrack) == key {
+			a.left.plCursor = i
+			break
+		}
+	}
+	a.left.scrollPlIntoView()
+}
+
+func (a *App) applyPlaylistOrder() {
+	if a.moveSession == nil || !a.moveSession.ReorderOnly || a.moveSession.TargetPlIdx < 0 || a.moveSession.TargetPlIdx >= len(a.left.playlists) {
+		return
+	}
+	if a.left.plStore == nil {
+		a.setStatus(StatusErrStyle.Render("X Playlist storage is unavailable"))
+		return
+	}
+	pl := &a.left.playlists[a.moveSession.TargetPlIdx]
+	if err := a.left.plStore.ReorderPlaylistTracks(pl.ID, pl.Tracks); err != nil {
+		a.setStatus(StatusErrStyle.Render("X Failed to save playlist order: " + err.Error()))
+		return
+	}
+	if a.playback != nil && a.playingPlaylistName == pl.Name {
+		currentID := ""
+		if a.playback.NowPlay != nil {
+			currentID = a.playback.NowPlay.ID
+		}
+		a.playback.Playlist = make([]domain.Track, len(pl.Tracks))
+		for i, track := range pl.Tracks {
+			path := playlistTrackLocalPath(track)
+			a.playback.Playlist[i] = domain.Track{
+				ID:        "local:" + path,
+				Title:     track.Title,
+				Artist:    track.Artist,
+				Duration:  track.Duration,
+				Thumbnail: track.Thumbnail,
+			}
+			if a.playback.Playlist[i].ID == currentID {
+				a.playback.CurrentIdx = i
+			}
+		}
+		a.playback.NextPlay = nil
+		if a.player != nil {
+			a.player.CancelPreDecode()
+		}
+	}
+	a.moveSession = nil
+	a.setStatus(StatusOKStyle.Render("> Playlist order saved"))
 }
 
 func (a *App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -535,10 +670,11 @@ func (a *App) updateSystem(msg tea.Msg) ([]tea.Cmd, bool, bool) {
 	case tea.KeyPressMsg:
 		oldTab := a.sidebarActive
 		visualizerEscape := a.palette.Visible() && msg.String() == "esc"
+		reorderEnter := a.moveSession != nil && a.moveSession.ReorderOnly && msg.String() == "enter"
 		if c := a.handleKeys(msg); c != nil {
 			cmds = append(cmds, c)
 		}
-		return cmds, true, oldTab != a.sidebarActive || visualizerEscape
+		return cmds, true, oldTab != a.sidebarActive || visualizerEscape || reorderEnter
 	default:
 		return cmds, false, false
 	}
@@ -605,8 +741,17 @@ func (a *App) updateComponents(msg tea.Msg) []tea.Cmd {
 			a.sidebarActive == SidePlaylists)
 
 	var leftCmd tea.Cmd
-	if !(a.right.showLangPopup && isKeyPressMsg(msg)) {
+	reorderInputKey := false
+	if key, ok := msg.(tea.KeyPressMsg); ok && a.moveSession != nil && a.moveSession.ReorderOnly {
+		reorderInputKey = key.String() == "/" || a.left.input.Focused()
+	}
+	if !(a.right.showLangPopup && isKeyPressMsg(msg)) &&
+		!(a.moveSession != nil && a.moveSession.ReorderOnly && isKeyPressMsg(msg) && !reorderInputKey) {
+		oldFilter := a.left.input.Value()
 		a.left, leftCmd = a.left.Update(msg, focusedContent, a.playback.NowPlay)
+		if a.moveSession != nil && a.moveSession.ReorderOnly && oldFilter != a.left.input.Value() {
+			a.moveSession.Selected = make(map[string]bool)
+		}
 		cmds = append(cmds, leftCmd)
 	}
 

@@ -57,7 +57,13 @@ func (a *App) handleKeys(msg tea.KeyPressMsg) tea.Cmd {
 	var cmds []tea.Cmd
 	switch msg.String() {
 	case "esc":
+		if a.moveSession != nil && a.moveSession.ReorderOnly && a.left.input.Focused() {
+			break
+		}
 		if a.moveSession != nil {
+			if a.moveSession.ReorderOnly {
+				a.restorePlaylistOrder()
+			}
 			a.moveSession = nil
 			a.setStatus(StatusMsgStyle.Render("> No changes to playlist"))
 		} else if a.palette.Visible() {
@@ -72,9 +78,17 @@ func (a *App) handleKeys(msg tea.KeyPressMsg) tea.Cmd {
 		}
 	case ".":
 		if a.moveSession != nil && !a.textInputFocused() &&
-			((a.moveSession.RemoveOnly && a.sidebarActive == SidePlaylists) ||
-				(!a.moveSession.RemoveOnly && a.sidebarActive == SideDownloads)) {
+			(((a.moveSession.RemoveOnly || a.moveSession.ReorderOnly) && a.sidebarActive == SidePlaylists) ||
+				(!a.moveSession.RemoveOnly && !a.moveSession.ReorderOnly && a.sidebarActive == SideDownloads)) {
 			a.toggleMoveSelection()
+		}
+	case "enter":
+		if a.moveSession != nil && a.moveSession.ReorderOnly && a.sidebarActive == SidePlaylists {
+			if a.left.input.Focused() {
+				a.left.input.Blur()
+			} else {
+				a.applyPlaylistOrder()
+			}
 		}
 	case "i":
 		if a.moveSession != nil && a.moveSession.RemoveOnly && a.sidebarActive == SidePlaylists &&
@@ -151,13 +165,17 @@ func (a *App) handleKeys(msg tea.KeyPressMsg) tea.Cmd {
 		}
 		cmds = append(cmds, a.cycleSidebar(-1))
 	case "up":
-		if a.sidebarActive == SideLogs {
+		if a.moveSession != nil && a.moveSession.ReorderOnly && a.sidebarActive == SidePlaylists && !a.textInputFocused() {
+			a.moveSelectedPlaylistTracks(-1)
+		} else if a.sidebarActive == SideLogs {
 			if a.logOffset < LogBuf.Len()-1 {
 				a.logOffset++
 			}
 		}
 	case "down":
-		if a.sidebarActive == SideLogs {
+		if a.moveSession != nil && a.moveSession.ReorderOnly && a.sidebarActive == SidePlaylists && !a.textInputFocused() {
+			a.moveSelectedPlaylistTracks(1)
+		} else if a.sidebarActive == SideLogs {
 			if a.logOffset > 0 {
 				a.logOffset--
 			}
