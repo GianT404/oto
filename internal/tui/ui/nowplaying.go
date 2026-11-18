@@ -297,11 +297,7 @@ func (r *RightPanel) syncSyncedLine(forceScroll bool) {
 		return
 	}
 
-	elapsed := r.elapsed
-	if r.nowPlay != nil && strings.HasPrefix(r.nowPlay.ID, "local:") {
-		elapsed += localLyricSyncOffset
-	}
-	elapsedSec := elapsed.Seconds()
+	elapsedSec := r.lyricElapsedSeconds()
 	best := 0
 	for i, line := range r.lyrics.Synced {
 		if line.Time <= elapsedSec {
@@ -332,6 +328,14 @@ func (r *RightPanel) syncSyncedLine(forceScroll bool) {
 		target = maxOff
 	}
 	r.offset = target
+}
+
+func (r RightPanel) lyricElapsedSeconds() float64 {
+	elapsed := r.elapsed
+	if r.nowPlay != nil && strings.HasPrefix(r.nowPlay.ID, "local:") {
+		elapsed += localLyricSyncOffset
+	}
+	return elapsed.Seconds()
 }
 
 // scrollToHighlight giữ highlightLine luôn nằm trong viewport.

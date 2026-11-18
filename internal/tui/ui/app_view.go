@@ -582,8 +582,11 @@ func (a *App) renderLyricAnim(innerW, innerH, frame int) string {
 		line := LyricHighlightStyle.Width(innerW).Align(lipgloss.Center).Render(a.currLyric)
 		return lipgloss.Place(innerW, innerH, lipgloss.Center, lipgloss.Center, line)
 	}
+	if time.Until(a.lyricAnimStart) > 0 {
+		return renderLyricPreview(innerW, innerH, a.prevLyric, a.currLyric)
+	}
 
-	progress := float64(time.Since(a.lyricAnimStart)) / float64(135*time.Millisecond)
+	progress := float64(time.Since(a.lyricAnimStart)) / float64(lyricTransitionDuration)
 	return render.LyricAnimation(
 		a.prevLyric,
 		a.currLyric,
@@ -598,4 +601,31 @@ func (a *App) renderLyricAnim(innerW, innerH, frame int) string {
 			return wordWrap(s, width)
 		},
 	)
+}
+
+func renderLyricPreview(innerW, innerH int, current, next string) string {
+	if innerW < 1 || innerH < 1 {
+		return ""
+	}
+	currentLines := wordWrap(current, innerW)
+	if len(currentLines) > innerH {
+		currentLines = currentLines[:innerH]
+	}
+	nextLines := wordWrap(next, innerW)
+	rows := make([]string, innerH)
+	currentStart := (innerH - len(currentLines)) / 2
+	for i, line := range currentLines {
+		rows[currentStart+i] = LyricHighlightStyle.Width(innerW).Align(lipgloss.Center).Render(line)
+	}
+	nextStart := currentStart + len(currentLines) + 1
+	if nextStart > innerH {
+		nextStart = innerH
+	}
+	if len(nextLines) > innerH-nextStart {
+		nextLines = nextLines[:innerH-nextStart]
+	}
+	for i, line := range nextLines {
+		rows[nextStart+i] = DimItemStyle.Width(innerW).Align(lipgloss.Center).Render(line)
+	}
+	return strings.Join(rows, "\n")
 }

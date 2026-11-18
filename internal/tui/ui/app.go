@@ -19,6 +19,8 @@ import (
 
 type tickMsg time.Time
 
+const lyricTransitionDuration = 12 * time.Millisecond
+
 func tick() tea.Cmd {
 	return tea.Tick(100*time.Millisecond, func(t time.Time) tea.Msg {
 		return tickMsg(t)
@@ -561,6 +563,29 @@ func isKeyPressMsg(msg tea.Msg) bool {
 
 func (a *App) syncLyricAnimation(previous string) {
 	current := a.right.GetCurrentLyricLine()
+	if time.Until(a.lyricAnimStart) > 0 ||
+		(!a.lyricAnimStart.IsZero() && time.Since(a.lyricAnimStart) < lyricTransitionDuration) {
+		return
+	}
+	if !a.lyricAnimationDisabled && a.right.loaded && !a.right.manualSelect &&
+		a.right.curLine >= 0 && a.right.curLine+1 < len(a.right.lyrics.Synced) {
+		currentLine := a.right.lyrics.Synced[a.right.curLine]
+		nextLine := a.right.lyrics.Synced[a.right.curLine+1]
+		previewAt := currentLine.End
+		if previewAt <= currentLine.Time || previewAt > nextLine.Time {
+			previewAt = nextLine.Time
+		}
+		until := time.Duration((previewAt - a.right.lyricElapsedSeconds()) * float64(time.Second))
+		if until > 0 && until <= 450*time.Millisecond && nextLine.Text != current {
+			a.prevLyric = current
+			a.currLyric = nextLine.Text
+			a.lyricAnimStart = time.Now().Add(until)
+			return
+		}
+	}
+	if current == a.currLyric {
+		return
+	}
 	if previous == current {
 		return
 	}
