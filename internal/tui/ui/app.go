@@ -19,6 +19,7 @@ import (
 
 type tickMsg time.Time
 
+// tốc độ chuyển lời bài hát
 const lyricTransitionDuration = 12 * time.Millisecond
 
 func tick() tea.Cmd {
