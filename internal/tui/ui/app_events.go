@@ -167,6 +167,9 @@ func (a *App) handleAudioEvents(msg tea.Msg) tea.Cmd {
 		if a.playback != nil && msg.Gen < a.playback.PlayerGen {
 			break
 		}
+		a.prevLyric = ""
+		a.currLyric = ""
+		a.lyricAnimStart = time.Time{}
 		t := msg.Track
 		a.right.SetPreferredIndex(-1)
 		if a.left.plStore != nil && t.ID != "" {
