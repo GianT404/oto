@@ -1,0 +1,76 @@
+name: Deploy OTO backend to Termux
+
+on:
+  push:
+    tags:
+      - 'termux-v*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: oto-termux-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.26'
+          cache: true
+
+      - name: Build Linux ARM64 backend
+        run: CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -trimpath -ldflags='-s -w' -o oto-server ./cmd/server
+
+      - name: Connect to Tailscale
+        uses: tailscale/github-action@v4
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:ci
+          ping: oto
+
+      - name: Install SSH credentials
+        env:
+          TERMUX_SSH_PRIVATE_KEY: ${{ secrets.TERMUX_SSH_PRIVATE_KEY }}
+          TERMUX_SSH_KNOWN_HOSTS: ${{ secrets.TERMUX_SSH_KNOWN_HOSTS }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$TERMUX_SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
+          printf '%s\n' "$TERMUX_SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/id_ed25519 ~/.ssh/known_hosts
+
+      - name: Deploy and check health
+        env:
+          TERMUX_SSH_USER: ${{ vars.TERMUX_SSH_USER }}
+        run: |
+          set -Eeuo pipefail
+          : "${TERMUX_SSH_USER:?Set repository variable TERMUX_SSH_USER}"
+
+          cat oto-server | ssh \
+            -i ~/.ssh/id_ed25519 \
+            -o BatchMode=yes \
+            -o StrictHostKeyChecking=yes \
+            -p 8022 \
+            "$TERMUX_SSH_USER@oto" \
+            'set -eu
+            cat > "$HOME/oto-server.new"
+            chmod 700 "$HOME/oto-server.new"
+            tmux kill-session -t oto 2>/dev/null || true
+            mv "$HOME/oto-server.new" "$HOME/oto-server"
+            tmux new-session -d -s oto -c "$HOME/oto-src" "$HOME/oto-server"
+            for attempt in $(seq 1 30); do
+              if curl -fsS http://127.0.0.1:8080/health; then
+                exit 0
+              fi
+              sleep 2
+            done
+            echo "Backend did not become healthy; inspect tmux logs with: tmux attach -t oto" >&2
+            exit 1'
