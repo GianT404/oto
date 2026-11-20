@@ -14,7 +14,7 @@ info:
     name: Personal / Educational Use Only
 
 servers:
-  - url: https://somz.duckdns.org
+  - url: https://otoz.io.vn
     description: Production server
 
 tags:
@@ -37,7 +37,7 @@ paths:
     get:
       tags: [System]
       summary: Health check
-      security: [] 
+      security: []
       description: Kiểm tra server còn sống hay không. Không yêu cầu tham số.
       operationId: getHealth
       responses:
@@ -279,12 +279,12 @@ paths:
 
 components:
   securitySchemes:
-      ApiKeyAuth:
-        type: apiKey
-        in: header
-        name: X-API-Key
-        description: >
-          Bắt buộc cho mọi endpoint dưới /api/v1. Không cần cho /health và /docs.
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: >
+        Bắt buộc cho mọi endpoint dưới /api/v1. Không cần cho /health và /docs.
   responses:
     TooManyRequests:
       description: >
