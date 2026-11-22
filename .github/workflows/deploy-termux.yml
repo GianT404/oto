@@ -29,7 +29,7 @@ jobs:
           oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
           oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
           tags: tag:ci
-          ping: oto
+          ping: 100.113.134.123
 
       - name: Install SSH credentials
         env:
@@ -44,6 +44,7 @@ jobs:
       - name: Sync source, build and deploy on Termux
         env:
           TERMUX_SSH_USER: ${{ vars.TERMUX_SSH_USER }}
+          TERMUX_SSH_HOST: ${{ vars.TERMUX_SSH_HOST || '100.113.134.123' }}
           OTO_DEPLOY_SHA: ${{ github.sha }}
         run: |
           set -Eeuo pipefail
@@ -52,9 +53,9 @@ jobs:
           ssh \
             -i ~/.ssh/id_ed25519 \
             -o BatchMode=yes \
-            -o StrictHostKeyChecking=yes \
+            -o StrictHostKeyChecking=accept-new \
             -p 8022 \
-            "$TERMUX_SSH_USER@oto" \
+            "$TERMUX_SSH_USER@$TERMUX_SSH_HOST" \
             bash -s -- "$OTO_DEPLOY_SHA" <<'REMOTE'
           set -Eeuo pipefail
           SHA="$1"
