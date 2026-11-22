@@ -170,7 +170,7 @@ class ApiService {
 
   async search(query: string): Promise<SearchResult[]> {
     const url = `${this.baseUrl}/api/v1/search?q=${encodeURIComponent(query)}`;
-    const res = await this.fetchWithFallback(url);
+    const res = await this.fetchWithFallback(url, undefined, 30000);
     if (!res.ok) throw new Error(`Search failed: ${res.status}`);
     return res.json();
   }

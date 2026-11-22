@@ -64,3 +64,5 @@ desktop/src-tauri/binaries/oto-backend-*
 /oto.exe
 
 /.VSCodeCounter
+.b64
+.jks

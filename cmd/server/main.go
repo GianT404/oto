@@ -1,8 +1,8 @@
 package main
 
 import (
-	"encoding/json"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -13,6 +13,7 @@ import (
 	_ "net/http/pprof"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"strings"
 	"syscall"
 	"time"
@@ -58,7 +59,11 @@ func main() {
 	}
 
 	sc := scraper.NewYtdlpScraperFastPath(ytdlpPath)
-	resilientSc := scraper.NewResilientScraper(sc)
+	searchCacheFile := ""
+	if cacheRoot, err := os.UserCacheDir(); err == nil {
+		searchCacheFile = filepath.Join(cacheRoot, "oto", "search-cache.json")
+	}
+	resilientSc := scraper.NewResilientScraperWithSearchCache(sc, searchCacheFile)
 
 	// Device registry: per-device token auth cho mobile app.
 	deviceReg := backend.NewDeviceRegistry()
@@ -79,42 +84,42 @@ func main() {
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 
-go func() {
-    logoColor := lipgloss.Color("#E8593C")
+	go func() {
+		logoColor := lipgloss.Color("#E8593C")
 
-    art := []string{ 
-        "	 ▄██████▄      ███      ▄██████▄",
-        "	███    ███ ▀█████████▄ ███    ███",
-        "	███    ███    ▀███▀▀██ ███    ███",
-        "	███    ███     ███   ▀ ███    ███",
-        "	███    ███     ███     ███    ███",
-        "	███    ███     ███     ███    ███",
-        "	███    ███     ███     ███    ███",
-        "	 ▀██████▀     ▄████▀    ▀██████▀",
-    }
+		art := []string{
+			"	 ▄██████▄      ███      ▄██████▄",
+			"	███    ███ ▀█████████▄ ███    ███",
+			"	███    ███    ▀███▀▀██ ███    ███",
+			"	███    ███     ███   ▀ ███    ███",
+			"	███    ███     ███     ███    ███",
+			"	███    ███     ███     ███    ███",
+			"	███    ███     ███     ███    ███",
+			"	 ▀██████▀     ▄████▀    ▀██████▀",
+		}
 
-    // Print ASCII logo with a single color.
-    style := lipgloss.NewStyle().Foreground(logoColor)
+		// Print ASCII logo with a single color.
+		style := lipgloss.NewStyle().Foreground(logoColor)
 
-    for _, line := range art {
-        fmt.Println(style.Render(line))
-    }
+		for _, line := range art {
+			fmt.Println(style.Render(line))
+		}
 		log.Printf("")
-    log.Printf("Server starting on %s", srv.Addr)
-    log.Printf("   yt-dlp binary: %s", ytdlpPath)
-    log.Println("   Endpoints:")
-    log.Println("     GET /api/v1/search?q={keyword}")
-    log.Println("     GET /api/v1/stream?id={video_id}")
-    log.Println("     GET /api/v1/lyrics?id={video_id}")
-    log.Println("     GET /api/v1/resolve?id={video_id}")
-    log.Println("     GET /health")
+		log.Printf("Server starting on %s", srv.Addr)
+		log.Printf("   yt-dlp binary: %s", ytdlpPath)
+		log.Println("   Endpoints:")
+		log.Println("     GET /api/v1/search?q={keyword}")
+		log.Println("     GET /api/v1/stream?id={video_id}")
+		log.Println("     GET /api/v1/lyrics?id={video_id}")
+		log.Println("     GET /api/v1/resolve?id={video_id}")
+		log.Println("     GET /health")
 
-    if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-        slog.Error("server error", "error", err.Error())
-        os.Exit(1)
-    }
-}()
-		<-quit
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			slog.Error("server error", "error", err.Error())
+			os.Exit(1)
+		}
+	}()
+	<-quit
 	slog.Info("Shutting down server...")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)

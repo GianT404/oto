@@ -106,7 +106,10 @@ func markClientSuccess(c string) {
 // ytBaseArgs trả args nền tảng cho mọi lệnh yt-dlp: flags ổn định + cookies + extra args từ oto_YTDLP_ARGS.
 func ytBaseArgs() []string {
 	loadYtConfig()
-	args := []string{"--no-warnings", "--force-ipv4"}
+	args := []string{"--no-warnings"}
+	if strings.TrimSpace(os.Getenv("OTO_YTDLP_IPV6")) == "" {
+		args = append(args, "--force-ipv4")
+	}
 	if cookiesPath != "" {
 		args = append(args, "--cookies", cookiesPath)
 	}
@@ -529,6 +532,15 @@ func (y *YtdlpScraper) Search(ctx context.Context, keyword string, offset int) (
 	if offset < 0 || offset > MaxSearchOffset {
 		return nil, fmt.Errorf("search offset must be between 0 and %d", MaxSearchOffset)
 	}
+
+	nativeCtx, nativeCancel := context.WithTimeout(ctx, 8*time.Second)
+	nativeResults, nativeErr := searchYouTube(nativeCtx, keyword, offset)
+	nativeCancel()
+	if nativeErr == nil {
+		return nativeResults, nil
+	}
+	log.Printf("search: native lookup failed for %q: %v; falling back to yt-dlp", keyword, nativeErr)
+
 	if err := acquireYtdlp(ctx); err != nil {
 		return nil, err
 	}
@@ -542,7 +554,7 @@ func (y *YtdlpScraper) Search(ctx context.Context, keyword string, offset int) (
 		// Chạy IPv4 ổn định + timeout mỗi socket để không kẹt vô hạn khi
 		// host có IPv6 route lỗi (search không được nhanh cũng phải fail
 		// sớm chứ không kéo dài tới timeout của app).
-		"--socket-timeout", "15",
+		"--socket-timeout", "5",
 	}
 	args = append(args, ytBaseArgs()...)
 	args = append(args, ytPreferredFlag()...)

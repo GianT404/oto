@@ -2,6 +2,9 @@ package scraper
 
 import (
 	"context"
+	"encoding/json"
+	"os"
+	"path/filepath"
 	"strconv"
 	"sync"
 	"time"
@@ -19,12 +22,17 @@ const (
 	metadataCacheTTL = 24 * time.Hour
 	maxMetadataCache = 1000
 
-	bgWorkTimeout = 50 * time.Second
+	bgWorkTimeout = 90 * time.Second
 )
 
 type searchCacheEntry struct {
 	results   []SearchResult
 	expiresAt time.Time
+}
+
+type persistedSearchEntry struct {
+	Results   []SearchResult `json:"results"`
+	ExpiresAt time.Time      `json:"expires_at"`
 }
 
 type streamCacheEntry struct {
@@ -47,8 +55,9 @@ type streamFlight struct {
 type ResilientScraper struct {
 	inner Scraper
 
-	searchMu    sync.Mutex
-	searchCache map[string]searchCacheEntry
+	searchMu        sync.Mutex
+	searchCache     map[string]searchCacheEntry
+	searchCacheFile string
 
 	streamMu    sync.Mutex
 	streamCache map[string]streamCacheEntry
@@ -67,19 +76,66 @@ type ResilientScraper struct {
 }
 
 func NewResilientScraper(inner Scraper) *ResilientScraper {
+	return NewResilientScraperWithSearchCache(inner, "")
+}
+
+func NewResilientScraperWithSearchCache(inner Scraper, cacheFile string) *ResilientScraper {
 	s := &ResilientScraper{
-		inner:        inner,
-		searchCache:  make(map[string]searchCacheEntry),
-		streamCache:  make(map[string]streamCacheEntry),
-		lyricsCache:  cache.NewTTL[[]LyricsData](maxLyricsCache, lyricsCacheTTL),
-		metaCache:    cache.NewTTL[MusicMetadata](maxMetadataCache, metadataCacheTTL),
-		searchCB:     newCircuitBreaker(5, 30*time.Second),
-		streamCB:     newCircuitBreaker(5, 30*time.Second),
-		searchFlight: make(map[string]*searchFlight),
-		streamFlight: make(map[string]*streamFlight),
+		inner:           inner,
+		searchCache:     make(map[string]searchCacheEntry),
+		searchCacheFile: cacheFile,
+		streamCache:     make(map[string]streamCacheEntry),
+		lyricsCache:     cache.NewTTL[[]LyricsData](maxLyricsCache, lyricsCacheTTL),
+		metaCache:       cache.NewTTL[MusicMetadata](maxMetadataCache, metadataCacheTTL),
+		searchCB:        newCircuitBreaker(5, 30*time.Second),
+		streamCB:        newCircuitBreaker(5, 30*time.Second),
+		searchFlight:    make(map[string]*searchFlight),
+		streamFlight:    make(map[string]*streamFlight),
+	}
+	if cacheFile != "" && os.MkdirAll(filepath.Dir(cacheFile), 0o755) == nil {
+		s.loadSearchCache()
 	}
 	go s.cleanupLoop()
 	return s
+}
+
+func (s *ResilientScraper) loadSearchCache() {
+	b, err := os.ReadFile(s.searchCacheFile)
+	if err != nil {
+		return
+	}
+	var entries map[string]persistedSearchEntry
+	if err := json.Unmarshal(b, &entries); err != nil {
+		return
+	}
+	now := time.Now()
+	for key, e := range entries {
+		if now.Before(e.ExpiresAt) {
+			s.searchCache[key] = searchCacheEntry{results: e.Results, expiresAt: e.ExpiresAt}
+		}
+	}
+}
+
+func (s *ResilientScraper) persistSearchCacheLocked() {
+	if s.searchCacheFile == "" {
+		return
+	}
+	entries := make(map[string]persistedSearchEntry)
+	now := time.Now()
+	for key, e := range s.searchCache {
+		if now.Before(e.expiresAt) {
+			entries[key] = persistedSearchEntry{Results: e.results, ExpiresAt: e.expiresAt}
+		}
+	}
+	b, err := json.Marshal(entries)
+	if err != nil {
+		return
+	}
+	tmp := s.searchCacheFile + ".tmp"
+	if err := os.WriteFile(tmp, b, 0o600); err != nil {
+		return
+	}
+	_ = os.Rename(tmp, s.searchCacheFile)
 }
 
 func (s *ResilientScraper) cleanupLoop() {
@@ -163,6 +219,7 @@ func (s *ResilientScraper) Search(ctx context.Context, keyword string, offset in
 		if err == nil {
 			s.searchMu.Lock()
 			s.searchCache[key] = searchCacheEntry{results: results, expiresAt: time.Now().Add(searchCacheTTL)}
+			s.persistSearchCacheLocked()
 			s.searchMu.Unlock()
 		}
 	}()
