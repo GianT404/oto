@@ -30,3 +30,12 @@ func TestParseYouTubeSearch(t *testing.T) {
 		t.Fatalf("offset page: %+v", page)
 	}
 }
+
+func TestParseYouTubeAPIKey(t *testing.T) {
+	if got := parseYouTubeAPIKey([]byte(`var ytcfg={"INNERTUBE_API_KEY":"key-from-page"};`)); got != "key-from-page" {
+		t.Fatalf("got %q", got)
+	}
+	if got := parseYouTubeAPIKey([]byte(`no key here`)); got != "" {
+		t.Fatalf("got %q, want empty", got)
+	}
+}

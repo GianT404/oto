@@ -8,12 +8,67 @@ import (
 	"io"
 	"net"
 	"net/http"
+	"net/url"
+	"os"
+	"regexp"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 )
 
-const youtubeSearchAPIKey = "AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8"
+var reYouTubeAPIKey = regexp.MustCompile(`"INNERTUBE_API_KEY":"([^"]+)"`)
+
+var (
+	youtubeAPIKeyMu    sync.Mutex
+	youtubeAPIKeyCache string
+	youtubeAPIKeyUntil time.Time
+)
+
+func parseYouTubeAPIKey(body []byte) string {
+	match := reYouTubeAPIKey.FindSubmatch(body)
+	if len(match) < 2 {
+		return ""
+	}
+	return string(match[1])
+}
+
+func getYouTubeAPIKey(ctx context.Context) (string, error) {
+	if key := strings.TrimSpace(os.Getenv("OTO_YOUTUBE_API_KEY")); key != "" {
+		return key, nil
+	}
+
+	youtubeAPIKeyMu.Lock()
+	defer youtubeAPIKeyMu.Unlock()
+	if youtubeAPIKeyCache != "" && time.Now().Before(youtubeAPIKeyUntil) {
+		return youtubeAPIKeyCache, nil
+	}
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, "https://www.youtube.com/", nil)
+	if err != nil {
+		return "", err
+	}
+	req.Header.Set("User-Agent", defaultUA)
+	resp, err := youtubeSearchClient.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("youtube config: HTTP %d", resp.StatusCode)
+	}
+	body, err := io.ReadAll(io.LimitReader(resp.Body, 2<<20))
+	if err != nil {
+		return "", err
+	}
+	key := parseYouTubeAPIKey(body)
+	if key == "" {
+		return "", fmt.Errorf("youtube config: missing INNERTUBE_API_KEY")
+	}
+	youtubeAPIKeyCache = key
+	youtubeAPIKeyUntil = time.Now().Add(24 * time.Hour)
+	return key, nil
+}
 
 var youtubeSearchDialer = &net.Dialer{Timeout: 5 * time.Second}
 
@@ -43,7 +98,11 @@ func searchYouTube(ctx context.Context, keyword string, offset int) ([]SearchRes
 		return nil, err
 	}
 
-	endpoint := "https://www.youtube.com/youtubei/v1/search?key=" + youtubeSearchAPIKey + "&prettyPrint=false"
+	key, err := getYouTubeAPIKey(ctx)
+	if err != nil {
+		return nil, err
+	}
+	endpoint := "https://www.youtube.com/youtubei/v1/search?key=" + url.QueryEscape(key) + "&prettyPrint=false"
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint, bytes.NewReader(body))
 	if err != nil {
 		return nil, err
