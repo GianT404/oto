@@ -1,177 +1,177 @@
-name: Deploy OTO Backend to GCP
+# name: Deploy OTO Backend to GCP
 
-on:
-  push:
-    branches:
-      - main
-    paths:
-      - 'cmd/server/**'
-      - 'internal/**'
-      - 'go.mod'
-      - 'go.sum'
-      - 'Dockerfile'
-      - 'docker-compose.yml'
-      - 'Caddyfile'
-      - '.github/workflows/deploy.yml'
-  workflow_dispatch:
+# on:
+#   push:
+#     branches:
+#       - main
+#     paths:
+#       - 'cmd/server/**'
+#       - 'internal/**'
+#       - 'go.mod'
+#       - 'go.sum'
+#       - 'Dockerfile'
+#       - 'docker-compose.yml'
+#       - 'Caddyfile'
+#       - '.github/workflows/deploy.yml'
+#   workflow_dispatch:
 
-permissions:
-  contents: read
+# permissions:
+#   contents: read
 
-concurrency:
-  group: oto-production
-  cancel-in-progress: false
+# concurrency:
+#   group: oto-production
+#   cancel-in-progress: false
 
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+# jobs:
+#   test:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v4
 
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: '1.26'
-          cache: true
+#       - name: Set up Go
+#         uses: actions/setup-go@v5
+#         with:
+#           go-version: '1.26'
+#           cache: true
 
-      - name: Install ALSA dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libasound2-dev pkg-config
+#       - name: Install ALSA dependencies
+#         run: |
+#           sudo apt-get update
+#           sudo apt-get install -y libasound2-dev pkg-config
 
-      - name: Run backend tests
-        run: |
-          go test -v ./cmd/server \
-            ./internal/handler \
-            ./internal/scraper \
-            ./internal/cache \
-            ./internal/backend \
-            ./internal/local \
-            ./internal/domain
+#       - name: Run backend tests
+#         run: |
+#           go test -v ./cmd/server \
+#             ./internal/handler \
+#             ./internal/scraper \
+#             ./internal/cache \
+#             ./internal/backend \
+#             ./internal/local \
+#             ./internal/domain
 
-  build-and-push:
-    needs: test
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+#   build-and-push:
+#     needs: test
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v4
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+#       - name: Set up Docker Buildx
+#         uses: docker/setup-buildx-action@v3
 
-      - name: Login to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+#       - name: Login to Docker Hub
+#         uses: docker/login-action@v3
+#         with:
+#           username: ${{ secrets.DOCKER_USERNAME }}
+#           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build and push immutable and latest tags
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          push: true
-          tags: |
-            ${{ secrets.DOCKER_USERNAME }}/oto-backend:latest
-            ${{ secrets.DOCKER_USERNAME }}/oto-backend:${{ github.sha }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+#       - name: Build and push immutable and latest tags
+#         uses: docker/build-push-action@v5
+#         with:
+#           context: .
+#           push: true
+#           tags: |
+#             ${{ secrets.DOCKER_USERNAME }}/oto-backend:latest
+#             ${{ secrets.DOCKER_USERNAME }}/oto-backend:${{ github.sha }}
+#           cache-from: type=gha
+#           cache-to: type=gha,mode=max
 
-  deploy:
-    needs: build-and-push
-    runs-on: ubuntu-latest
-    steps:
-      - name: Deploy to GCP
-        uses: appleboy/ssh-action@v1.0.3
-        env:
-          OTO_IMAGE_TAG: ${{ github.sha }}
-          OTO_IMAGE_REPOSITORY: ${{ secrets.DOCKER_USERNAME }}/oto-backend
-        with:
-          host: ${{ secrets.GCP_VM_IP }}
-          username: ${{ secrets.SSH_USERNAME }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          envs: OTO_IMAGE_TAG,OTO_IMAGE_REPOSITORY
-          script: |
-            set -Eeuo pipefail
+#   deploy:
+#     needs: build-and-push
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Deploy to GCP
+#         uses: appleboy/ssh-action@v1.0.3
+#         env:
+#           OTO_IMAGE_TAG: ${{ github.sha }}
+#           OTO_IMAGE_REPOSITORY: ${{ secrets.DOCKER_USERNAME }}/oto-backend
+#         with:
+#           host: ${{ secrets.GCP_VM_IP }}
+#           username: ${{ secrets.SSH_USERNAME }}
+#           key: ${{ secrets.SSH_PRIVATE_KEY }}
+#           envs: OTO_IMAGE_TAG,OTO_IMAGE_REPOSITORY
+#           script: |
+#             set -Eeuo pipefail
 
-            APP_DIR="$HOME/oto"
+#             APP_DIR="$HOME/oto"
 
-            if [[ ! -d "$APP_DIR/.git" ]]; then
-              echo "OTO repository not found: $APP_DIR"
-              exit 1
-            fi
+#             if [[ ! -d "$APP_DIR/.git" ]]; then
+#               echo "OTO repository not found: $APP_DIR"
+#               exit 1
+#             fi
 
-            cd "$APP_DIR"
+#             cd "$APP_DIR"
 
-            # Always deploy the exact commit that triggered this workflow.
-            git remote set-url origin https://github.com/GianT404/oto.git
-            git fetch origin main
-            git reset --hard "$OTO_IMAGE_TAG"
+#             # Always deploy the exact commit that triggered this workflow.
+#             git remote set-url origin https://github.com/GianT404/oto.git
+#             git fetch origin main
+#             git reset --hard "$OTO_IMAGE_TAG"
 
-            # The API key is managed only on the GCP VM.
-            if [[ ! -s .env ]] || ! grep -Eq '^oto_API_KEY=.+$' .env; then
-              echo "Missing or empty oto_API_KEY in $APP_DIR/.env"
-              exit 1
-            fi
-            chmod 600 .env
+#             # The API key is managed only on the GCP VM.
+#             if [[ ! -s .env ]] || ! grep -Eq '^oto_API_KEY=.+$' .env; then
+#               echo "Missing or empty oto_API_KEY in $APP_DIR/.env"
+#               exit 1
+#             fi
+#             chmod 600 .env
 
-            : "${OTO_IMAGE_TAG:?Missing image tag from GitHub Actions}"
-            : "${OTO_IMAGE_REPOSITORY:?Missing Docker image repository from GitHub Actions}"
-            export OTO_IMAGE_TAG OTO_IMAGE_REPOSITORY
+#             : "${OTO_IMAGE_TAG:?Missing image tag from GitHub Actions}"
+#             : "${OTO_IMAGE_REPOSITORY:?Missing Docker image repository from GitHub Actions}"
+#             export OTO_IMAGE_TAG OTO_IMAGE_REPOSITORY
 
-            # Validate the new Compose project and pull its image before downtime.
-            docker compose -p oto config -q
-            docker compose -p oto pull
+#             # Validate the new Compose project and pull its image before downtime.
+#             docker compose -p oto config -q
+#             docker compose -p oto pull
 
-            # One-time migration: stop the old SOM Compose project and delete
-            # its old volumes. This is intentionally destructive by user choice.
-            if [[ -n "$(docker ps -aq --filter label=com.docker.compose.project=som)" ]]; then
-              docker compose -p som down --remove-orphans --volumes
-            fi
+#             # One-time migration: stop the old SOM Compose project and delete
+#             # its old volumes. This is intentionally destructive by user choice.
+#             if [[ -n "$(docker ps -aq --filter label=com.docker.compose.project=som)" ]]; then
+#               docker compose -p som down --remove-orphans --volumes
+#             fi
 
-            for volume in som_caddy_data som_caddy_config som_ytdlp_cache; do
-              if docker volume inspect "$volume" >/dev/null 2>&1; then
-                docker volume rm "$volume"
-              fi
-            done
+#             for volume in som_caddy_data som_caddy_config som_ytdlp_cache; do
+#               if docker volume inspect "$volume" >/dev/null 2>&1; then
+#                 docker volume rm "$volume"
+#               fi
+#             done
 
-            # Start the new OTO project with fresh OTO-owned volumes.
-            docker compose -p oto up -d --remove-orphans
+#             # Start the new OTO project with fresh OTO-owned volumes.
+#             docker compose -p oto up -d --remove-orphans
 
-            # Wait for the backend healthcheck before reporting success.
-            backend_id="$(docker compose -p oto ps -q oto-backend-prod)"
-            if [[ -z "$backend_id" ]]; then
-              echo "OTO backend container was not created"
-              docker compose -p oto logs --tail=100
-              exit 1
-            fi
+#             # Wait for the backend healthcheck before reporting success.
+#             backend_id="$(docker compose -p oto ps -q oto-backend-prod)"
+#             if [[ -z "$backend_id" ]]; then
+#               echo "OTO backend container was not created"
+#               docker compose -p oto logs --tail=100
+#               exit 1
+#             fi
 
-            healthy=false
-            for attempt in $(seq 1 30); do
-              status="$(docker inspect --format '{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}' "$backend_id")"
-              case "$status" in
-                healthy)
-                  healthy=true
-                  break
-                  ;;
-                unhealthy|exited|dead)
-                  echo "OTO backend entered state: $status"
-                  docker compose -p oto logs --tail=100 oto-backend-prod
-                  exit 1
-                  ;;
-              esac
-              sleep 4
-            done
+#             healthy=false
+#             for attempt in $(seq 1 30); do
+#               status="$(docker inspect --format '{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}' "$backend_id")"
+#               case "$status" in
+#                 healthy)
+#                   healthy=true
+#                   break
+#                   ;;
+#                 unhealthy|exited|dead)
+#                   echo "OTO backend entered state: $status"
+#                   docker compose -p oto logs --tail=100 oto-backend-prod
+#                   exit 1
+#                   ;;
+#               esac
+#               sleep 4
+#             done
 
-            if [[ "$healthy" != true ]]; then
-              echo "OTO backend did not become healthy in time"
-              docker compose -p oto logs --tail=100 oto-backend-prod
-              exit 1
-            fi
+#             if [[ "$healthy" != true ]]; then
+#               echo "OTO backend did not become healthy in time"
+#               docker compose -p oto logs --tail=100 oto-backend-prod
+#               exit 1
+#             fi
 
-            # Remove the legacy local latest tag; the running container uses the immutable SHA tag.
-            docker image rm "${OTO_IMAGE_REPOSITORY}:latest" >/dev/null 2>&1 || true
-            docker image prune -f >/dev/null
+#             # Remove the legacy local latest tag; the running container uses the immutable SHA tag.
+#             docker image rm "${OTO_IMAGE_REPOSITORY}:latest" >/dev/null 2>&1 || true
+#             docker image prune -f >/dev/null
 
-            docker compose -p oto ps
-            echo "OTO deployment completed successfully."
+#             docker compose -p oto ps
+#             echo "OTO deployment completed successfully."

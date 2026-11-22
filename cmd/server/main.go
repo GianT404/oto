@@ -106,7 +106,7 @@ func main() {
 		}
 		log.Printf("")
 		log.Printf("Server starting on %s", srv.Addr)
-		log.Printf("   yt-dlp binary: %s", ytdlpPath)
+		log.Printf("yt-dlp binary: %s", ytdlpPath)
 		log.Println("   Endpoints:")
 		log.Println("     GET /api/v1/search?q={keyword}")
 		log.Println("     GET /api/v1/stream?id={video_id}")
