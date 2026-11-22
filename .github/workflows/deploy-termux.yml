@@ -2,8 +2,17 @@ name: Deploy OTO backend to Termux
 
 on:
   push:
-    tags:
-      - 'termux-v*'
+    branches:
+      - main
+    paths:
+      - 'cmd/server/**'
+      - 'internal/**'
+      - 'go.mod'
+      - 'go.sum'
+      - 'Dockerfile'
+      - 'docker-compose.yml'
+      - 'Caddyfile'
+      - '.github/workflows/deploy.yml'
   workflow_dispatch:
 
 permissions:
