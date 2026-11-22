@@ -9,10 +9,7 @@ on:
       - 'internal/**'
       - 'go.mod'
       - 'go.sum'
-      - 'Dockerfile'
-      - 'docker-compose.yml'
-      - 'Caddyfile'
-      - '.github/workflows/deploy.yml'
+      - '.github/workflows/deploy-termux.yml'
   workflow_dispatch:
 
 permissions:
@@ -26,18 +23,6 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out source
-        uses: actions/checkout@v4
-
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: '1.26'
-          cache: true
-
-      - name: Build Linux ARM64 backend
-        run: CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -trimpath -ldflags='-s -w' -o oto-server ./cmd/server
-
       - name: Connect to Tailscale
         uses: tailscale/github-action@v4
         with:
@@ -56,30 +41,53 @@ jobs:
           printf '%s\n' "$TERMUX_SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
           chmod 600 ~/.ssh/id_ed25519 ~/.ssh/known_hosts
 
-      - name: Deploy and check health
+      - name: Sync source, build and deploy on Termux
         env:
           TERMUX_SSH_USER: ${{ vars.TERMUX_SSH_USER }}
+          OTO_DEPLOY_SHA: ${{ github.sha }}
         run: |
           set -Eeuo pipefail
           : "${TERMUX_SSH_USER:?Set repository variable TERMUX_SSH_USER}"
 
-          cat oto-server | ssh \
+          ssh \
             -i ~/.ssh/id_ed25519 \
             -o BatchMode=yes \
             -o StrictHostKeyChecking=yes \
             -p 8022 \
             "$TERMUX_SSH_USER@oto" \
-            'set -eu
-            cat > "$HOME/oto-server.new"
-            chmod 700 "$HOME/oto-server.new"
-            tmux kill-session -t oto 2>/dev/null || true
-            mv "$HOME/oto-server.new" "$HOME/oto-server"
-            tmux new-session -d -s oto -c "$HOME/oto-src" "$HOME/oto-server"
-            for attempt in $(seq 1 30); do
-              if curl -fsS http://127.0.0.1:8080/health; then
-                exit 0
-              fi
-              sleep 2
-            done
-            echo "Backend did not become healthy; inspect tmux logs with: tmux attach -t oto" >&2
-            exit 1'
+            bash -s -- "$OTO_DEPLOY_SHA" <<'REMOTE'
+          set -Eeuo pipefail
+          SHA="$1"
+          APP_DIR="$HOME/oto"
+
+          if [[ ! -d "$APP_DIR/.git" ]]; then
+            echo "OTO repository not found: $APP_DIR" >&2
+            exit 1
+          fi
+
+          cd "$APP_DIR"
+          git remote set-url origin https://github.com/GianT404/oto.git
+          git fetch origin main
+          git reset --hard "$SHA"
+
+          if [[ ! -s .env ]]; then
+            echo "Missing $APP_DIR/.env" >&2
+            exit 1
+          fi
+
+          go build -o "$HOME/oto-server.new" ./cmd/server
+          chmod 700 "$HOME/oto-server.new"
+
+          tmux kill-session -t oto 2>/dev/null || true
+          mv "$HOME/oto-server.new" "$HOME/oto-server"
+          tmux new-session -d -s oto -c "$APP_DIR" "$HOME/oto-server"
+
+          for attempt in $(seq 1 90); do
+            if curl -fsS http://127.0.0.1:8080/health; then
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "Backend did not become healthy; inspect tmux logs with: tmux attach -t oto" >&2
+          exit 1
+          REMOTE

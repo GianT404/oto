@@ -348,8 +348,8 @@ func cleanupStaleTempFiles() {
 		if err != nil {
 			continue
 		}
-		// File cũ hơn 1h: xóa hẳn (cache không còn giá trị).
-		if now.Sub(info.ModTime()) > 1*time.Hour {
+		// File cũ hơn 6h: xóa hẳn (cache không còn giá trị).
+		if now.Sub(info.ModTime()) > 6*time.Hour {
 			os.Remove(f)
 			continue
 		}

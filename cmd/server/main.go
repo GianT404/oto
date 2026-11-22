@@ -12,6 +12,7 @@ import (
 	"net/http"
 	_ "net/http/pprof"
 	"os"
+	"os/exec"
 	"os/signal"
 	"path/filepath"
 	"strings"
@@ -29,6 +30,20 @@ import (
 )
 
 const streamRequestTimeout = 20 * time.Minute
+
+func warmYtdlp(binPath string) {
+	ctx, cancel := context.WithTimeout(context.Background(), 45*time.Second)
+	defer cancel()
+	cmd := exec.CommandContext(ctx, binPath, "--list-extractors")
+	cmd.Stdout = io.Discard
+	cmd.Stderr = io.Discard
+	start := time.Now()
+	if err := cmd.Run(); err != nil {
+		slog.Warn("yt-dlp warm-up failed", "error", err, "elapsed", time.Since(start))
+		return
+	}
+	slog.Info("yt-dlp warm-up done", "elapsed", time.Since(start))
+}
 
 func main() {
 	if err := godotenv.Load(); err != nil {
@@ -57,6 +72,8 @@ func main() {
 	if ytdlpPath == "" {
 		ytdlpPath = "yt-dlp"
 	}
+
+	warmYtdlp(ytdlpPath)
 
 	sc := scraper.NewYtdlpScraperFastPath(ytdlpPath)
 	searchCacheFile := ""
