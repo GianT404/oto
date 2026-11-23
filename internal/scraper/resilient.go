@@ -287,8 +287,10 @@ func (s *ResilientScraper) GetStreamInfo(ctx context.Context, videoID string) (*
 	}
 }
 
-func (s *ResilientScraper) DownloadAudio(ctx context.Context, videoID string) (string, error) {
-	return s.inner.DownloadAudio(ctx, videoID)
+func (s *ResilientScraper) DownloadAudio(_ context.Context, videoID string) (string, error) {
+	bgCtx, bgCancel := context.WithTimeout(context.Background(), bgWorkTimeout)
+	defer bgCancel()
+	return s.inner.DownloadAudio(bgCtx, videoID)
 }
 
 func (s *ResilientScraper) VideoTitle(ctx context.Context, videoID string) (string, error) {
