@@ -69,11 +69,19 @@ jobs:
             "$TERMUX_SSH_USER@$TERMUX_SSH_HOST" \
             bash -s -- "$OTO_DEPLOY_SHA" <<'REMOTE'
           set -Eeuo pipefail
+          set -x
           SHA="$1"
-          APP_DIR="$HOME/oto"
+          APP_DIR=""
 
-          if [[ ! -d "$APP_DIR/.git" ]]; then
-            echo "OTO repository not found: $APP_DIR" >&2
+          for candidate in "$HOME/oto" "$HOME/oto-src"; do
+            if [[ -d "$candidate/.git" ]]; then
+              APP_DIR="$candidate"
+              break
+            fi
+          done
+
+          if [[ -z "$APP_DIR" ]]; then
+            echo "OTO repository not found in $HOME/oto or $HOME/oto-src" >&2
             exit 1
           fi
 
