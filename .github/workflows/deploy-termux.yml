@@ -70,6 +70,7 @@ jobs:
             bash -s -- "$OTO_DEPLOY_SHA" <<'REMOTE'
           set -Eeuo pipefail
           set -x
+          trap 'echo "::error::Remote deploy failed at line $LINENO: $BASH_COMMAND" >&2' ERR
           SHA="$1"
           APP_DIR=""
 
