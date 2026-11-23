@@ -40,6 +40,7 @@ jobs:
           oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
           tags: tag:ci
           ping: 100.113.134.123
+          log-mode: normal
 
       - name: Install SSH credentials
         env:
